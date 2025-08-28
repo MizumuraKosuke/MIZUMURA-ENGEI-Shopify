@@ -1,7 +1,7 @@
-import { ImageResponse } from 'next/og';
-import LogoIcon from './icons/logo';
-import { join } from 'path';
-import { readFile } from 'fs/promises';
+import { ImageResponse } from 'next/og'
+import LogoIcon from './icons/logo'
+import { join } from 'path'
+import { readFile } from 'fs/promises'
 
 export type Props = {
   title?: string;
@@ -15,10 +15,10 @@ export default async function OpengraphImage(
       title: process.env.SITE_NAME
     },
     ...props
-  };
+  }
 
-  const file = await readFile(join(process.cwd(), './fonts/Inter-Bold.ttf'));
-  const font = Uint8Array.from(file).buffer;
+  const file = await readFile(join(process.cwd(), './fonts/Inter-Bold.ttf'))
+  const font = Uint8Array.from(file).buffer
 
   return new ImageResponse(
     (
@@ -41,5 +41,5 @@ export default async function OpengraphImage(
         }
       ]
     }
-  );
+  )
 }

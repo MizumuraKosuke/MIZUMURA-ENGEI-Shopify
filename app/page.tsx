@@ -1,6 +1,6 @@
-import { Carousel } from 'components/carousel';
-import { ThreeItemGrid } from 'components/grid/three-items';
-import Footer from 'components/layout/footer';
+import { Carousel } from 'components/carousel'
+import { ThreeItemGrid } from 'components/grid/three-items'
+import Footer from 'components/layout/footer'
 
 export const metadata = {
   description:
@@ -8,7 +8,7 @@ export const metadata = {
   openGraph: {
     type: 'website'
   }
-};
+}
 
 export default function HomePage() {
   return (
@@ -17,5 +17,5 @@ export default function HomePage() {
       <Carousel />
       <Footer />
     </>
-  );
+  )
 }

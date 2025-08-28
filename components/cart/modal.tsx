@@ -1,38 +1,38 @@
-'use client';
+'use client'
 
-import clsx from 'clsx';
-import { Dialog, Transition } from '@headlessui/react';
-import { ShoppingCartIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import LoadingDots from 'components/loading-dots';
-import Price from 'components/price';
-import { DEFAULT_OPTION } from 'lib/constants';
-import { createUrl } from 'lib/utils';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Fragment, useEffect, useRef, useState } from 'react';
-import { useFormStatus } from 'react-dom';
-import { createCartAndSetCookie, redirectToCheckout } from './actions';
-import { useCart } from './cart-context';
-import { DeleteItemButton } from './delete-item-button';
-import { EditItemQuantityButton } from './edit-item-quantity-button';
-import OpenCart from './open-cart';
+import { Dialog, Transition } from '@headlessui/react'
+import { ShoppingCartIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
+import LoadingDots from 'components/loading-dots'
+import Price from 'components/price'
+import { DEFAULT_OPTION } from 'lib/constants'
+import { createUrl } from 'lib/utils'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Fragment, useEffect, useRef, useState } from 'react'
+import { useFormStatus } from 'react-dom'
+import { createCartAndSetCookie, redirectToCheckout } from './actions'
+import { useCart } from './cart-context'
+import { DeleteItemButton } from './delete-item-button'
+import { EditItemQuantityButton } from './edit-item-quantity-button'
+import OpenCart from './open-cart'
 
 type MerchandiseSearchParams = {
   [key: string]: string;
 };
 
 export default function CartModal() {
-  const { cart, updateCartItem } = useCart();
-  const [isOpen, setIsOpen] = useState(false);
-  const quantityRef = useRef(cart?.totalQuantity);
-  const openCart = () => setIsOpen(true);
-  const closeCart = () => setIsOpen(false);
+  const { cart, updateCartItem } = useCart()
+  const [isOpen, setIsOpen] = useState(false)
+  const quantityRef = useRef(cart?.totalQuantity)
+  const openCart = () => setIsOpen(true)
+  const closeCart = () => setIsOpen(false)
 
   useEffect(() => {
     if (!cart) {
-      createCartAndSetCookie();
+      createCartAndSetCookie()
     }
-  }, [cart]);
+  }, [cart])
 
   useEffect(() => {
     if (
@@ -41,11 +41,11 @@ export default function CartModal() {
       cart?.totalQuantity > 0
     ) {
       if (!isOpen) {
-        setIsOpen(true);
+        setIsOpen(true)
       }
-      quantityRef.current = cart?.totalQuantity;
+      quantityRef.current = cart?.totalQuantity
     }
-  }, [isOpen, cart?.totalQuantity, quantityRef]);
+  }, [isOpen, cart?.totalQuantity, quantityRef])
 
   return (
     <>
@@ -100,21 +100,21 @@ export default function CartModal() {
                       )
                       .map((item, i) => {
                         const merchandiseSearchParams =
-                          {} as MerchandiseSearchParams;
+                          {} as MerchandiseSearchParams
 
                         item.merchandise.selectedOptions.forEach(
                           ({ name, value }) => {
                             if (value !== DEFAULT_OPTION) {
                               merchandiseSearchParams[name.toLowerCase()] =
-                                value;
+                                value
                             }
                           }
-                        );
+                        )
 
                         const merchandiseUrl = createUrl(
                           `/product/${item.merchandise.product.handle}`,
                           new URLSearchParams(merchandiseSearchParams)
-                        );
+                        )
 
                         return (
                           <li
@@ -140,7 +140,7 @@ export default function CartModal() {
                                       item.merchandise.product.title
                                     }
                                     src={
-                                      item.merchandise.product.featuredImage.url
+                                      item.merchandise.product.featuredImage?.url || ''
                                     }
                                   />
                                 </div>
@@ -190,7 +190,7 @@ export default function CartModal() {
                               </div>
                             </div>
                           </li>
-                        );
+                        )
                       })}
                   </ul>
                   <div className="py-4 text-sm text-neutral-500 dark:text-neutral-400">
@@ -225,7 +225,7 @@ export default function CartModal() {
         </Dialog>
       </Transition>
     </>
-  );
+  )
 }
 
 function CloseCart({ className }: { className?: string }) {
@@ -238,11 +238,11 @@ function CloseCart({ className }: { className?: string }) {
         )}
       />
     </div>
-  );
+  )
 }
 
 function CheckoutButton() {
-  const { pending } = useFormStatus();
+  const { pending } = useFormStatus()
 
   return (
     <button
@@ -252,5 +252,5 @@ function CheckoutButton() {
     >
       {pending ? <LoadingDots className="bg-white" /> : 'Proceed to Checkout'}
     </button>
-  );
+  )
 }

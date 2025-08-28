@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { removeItem } from 'components/cart/actions';
-import type { CartItem } from 'lib/shopify/types';
-import { useActionState } from 'react';
+import { XMarkIcon } from '@heroicons/react/24/outline'
+import { removeItem } from 'components/cart/actions'
+import type { CartItem } from 'lib/shopify/types'
+import { useActionState } from 'react'
 
 export function DeleteItemButton({
   item,
@@ -12,15 +12,15 @@ export function DeleteItemButton({
   item: CartItem;
   optimisticUpdate: any;
 }) {
-  const [message, formAction] = useActionState(removeItem, null);
-  const merchandiseId = item.merchandise.id;
-  const removeItemAction = formAction.bind(null, merchandiseId);
+  const [message, formAction] = useActionState(removeItem, null)
+  const merchandiseId = item.merchandise.id
+  const removeItemAction = formAction.bind(null, merchandiseId)
 
   return (
     <form
       action={async () => {
-        optimisticUpdate(merchandiseId, 'delete');
-        removeItemAction();
+        optimisticUpdate(merchandiseId, 'delete')
+        removeItemAction()
       }}
     >
       <button
@@ -34,5 +34,5 @@ export function DeleteItemButton({
         {message}
       </p>
     </form>
-  );
+  )
 }

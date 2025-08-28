@@ -1,9 +1,6 @@
 export default {
-  experimental: {
-    ppr: true,
-    inlineCss: true,
-    useCache: true
-  },
+  output: 'standalone',
+  outputFileTracingRoot: process.cwd(),
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [

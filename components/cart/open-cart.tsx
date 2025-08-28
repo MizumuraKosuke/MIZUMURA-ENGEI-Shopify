@@ -1,5 +1,5 @@
-import { ShoppingCartIcon } from '@heroicons/react/24/outline';
-import clsx from 'clsx';
+import { ShoppingCartIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 
 export default function OpenCart({
   className,
@@ -20,5 +20,5 @@ export default function OpenCart({
         </div>
       ) : null}
     </div>
-  );
+  )
 }

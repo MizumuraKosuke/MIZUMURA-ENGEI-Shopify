@@ -1,5 +1,5 @@
-import clsx from 'clsx';
-import Price from './price';
+import clsx from 'clsx'
+import Price from './price'
 
 const Label = ({
   title,
@@ -28,7 +28,7 @@ const Label = ({
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Label;
+export default Label
