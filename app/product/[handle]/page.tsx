@@ -6,9 +6,9 @@ import Footer from 'components/layout/footer'
 import { Gallery } from 'components/product/gallery'
 import { ProductProvider } from 'components/product/product-context'
 import { ProductDescription } from 'components/product/product-description'
+import { Image } from 'graphql/generated/graphql'
 import { HIDDEN_PRODUCT_TAG } from 'lib/constants'
 import { getProduct, getProductRecommendations } from 'lib/shopify'
-import { Image } from 'lib/shopify/types'
 import Link from 'next/link'
 import { Suspense } from 'react'
 
@@ -39,9 +39,9 @@ export async function generateMetadata(props: {
           images: [
             {
               url,
-              width,
-              height,
-              alt
+              width: width || undefined,
+              height: height || undefined,
+              alt: alt || undefined
             }
           ]
         }
@@ -89,9 +89,9 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
               }
             >
               <Gallery
-                images={product.images.slice(0, 5).map((image: Image) => ({
+                images={product.images.edges.slice(0, 5).map(({ node: image }: { node: Image }) => ({
                   src: image.url,
-                  altText: image.altText
+                  altText: image.altText || ''
                 }))}
               />
             </Suspense>
@@ -136,7 +136,7 @@ async function RelatedProducts({ id }: { id: string }) {
                   amount: product.priceRange.maxVariantPrice.amount,
                   currencyCode: product.priceRange.maxVariantPrice.currencyCode
                 }}
-                src={product.featuredImage?.url}
+                src={product.featuredImage?.url || ''}
                 fill
                 sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, (min-width: 475px) 50vw, 100vw"
               />

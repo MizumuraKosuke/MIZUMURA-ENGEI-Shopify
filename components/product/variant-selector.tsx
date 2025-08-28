@@ -2,20 +2,20 @@
 
 import clsx from 'clsx'
 import { useProduct, useUpdateURL } from 'components/product/product-context'
-import { ProductOption, ProductVariant } from 'lib/shopify/types'
+import { ProductOption, ProductVariant } from 'graphql/generated/graphql'
 
 type Combination = {
-  id: string;
-  availableForSale: boolean;
-  [key: string]: string | boolean;
-};
+  id: string
+  availableForSale: boolean
+  [key: string]: string | boolean
+}
 
 export function VariantSelector({
   options,
   variants
 }: {
-  options: ProductOption[];
-  variants: ProductVariant[];
+  options: ProductOption[]
+  variants: ProductVariant[]
 }) {
   const { state, updateOption } = useProduct()
   const updateURL = useUpdateURL()

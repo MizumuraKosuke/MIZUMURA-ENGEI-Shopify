@@ -4,7 +4,7 @@ import { PlusIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { addItem } from 'components/cart/actions'
 import { useProduct } from 'components/product/product-context'
-import { Product, ProductVariant } from 'lib/shopify/types'
+import { Product, ProductVariant } from 'graphql/generated/graphql'
 import { useActionState } from 'react'
 import { useCart } from './cart-context'
 
@@ -63,15 +63,16 @@ export function AddToCart({ product }: { product: Product }) {
   const { state } = useProduct()
   const [message, formAction] = useActionState(addItem, null)
 
-  const variant = variants.find((variant: ProductVariant) =>
+  const variantNodes = variants.edges.map(edge => edge.node)
+  const variant = variantNodes.find((variant: ProductVariant) =>
     variant.selectedOptions.every(
       (option) => option.value === state[option.name.toLowerCase()]
     )
   )
-  const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined
+  const defaultVariantId = variantNodes.length === 1 ? variantNodes[0]?.id : undefined
   const selectedVariantId = variant?.id || defaultVariantId
   const addItemAction = formAction.bind(null, selectedVariantId)
-  const finalVariant = variants.find(
+  const finalVariant = variantNodes.find(
     (variant) => variant.id === selectedVariantId
   )!
 

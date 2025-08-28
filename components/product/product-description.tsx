@@ -1,7 +1,7 @@
 import { AddToCart } from 'components/cart/add-to-cart'
 import Price from 'components/price'
 import Prose from 'components/prose'
-import { Product } from 'lib/shopify/types'
+import { Product } from 'graphql/generated/graphql'
 import { VariantSelector } from './variant-selector'
 
 export function ProductDescription({ product }: { product: Product }) {
@@ -16,7 +16,7 @@ export function ProductDescription({ product }: { product: Product }) {
           />
         </div>
       </div>
-      <VariantSelector options={product.options} variants={product.variants} />
+      <VariantSelector options={product.options} variants={product.variants.nodes} />
       {product.descriptionHtml ? (
         <Prose
           className="mb-6 text-sm leading-tight dark:text-white/[60%]"

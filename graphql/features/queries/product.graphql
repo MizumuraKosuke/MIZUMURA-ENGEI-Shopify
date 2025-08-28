@@ -1,0 +1,23 @@
+#import "../fragments/product.graphql"
+
+query getProduct($handle: String!) {
+  product(handle: $handle) {
+    ...product
+  }
+}
+
+query getProducts($sortKey: ProductSortKeys, $reverse: Boolean, $query: String) {
+  products(sortKey: $sortKey, reverse: $reverse, query: $query, first: 100) {
+    edges {
+      node {
+        ...product
+      }
+    }
+  }
+}
+
+query getProductRecommendations($productId: ID!) {
+  productRecommendations(productId: $productId) {
+    ...product
+  }
+}

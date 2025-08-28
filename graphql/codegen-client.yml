@@ -1,0 +1,27 @@
+overwrite: true
+schema:
+  # Remote Shopify Storefront API endpoint
+  - https://mizumura-engei.myshopify.com/api/2024-10/graphql.json:
+      headers:
+        X-Shopify-Storefront-Access-Token: e70264fc2143401fe8e522fa6ae7c255
+documents:
+  - 'graphql/features/**/*.graphql'
+generates:
+  graphql/generated/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-document-nodes
+    config:
+      skipTypename: false
+      scalars:
+        DateTime: string
+        Decimal: string
+        HTML: string
+        JSON: string
+        Money: string
+        URL: string
+        UnsignedInt64: string
+hooks:
+  afterOneFileWrite:
+    - prettier --write

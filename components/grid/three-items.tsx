@@ -1,6 +1,6 @@
 import { GridTileImage } from 'components/grid/tile'
+import type { Product } from 'graphql/generated/graphql'
 import { getCollectionProducts } from 'lib/shopify'
-import type { Product } from 'lib/shopify/types'
 import Link from 'next/link'
 
 function ThreeItemGridItem({
@@ -8,9 +8,9 @@ function ThreeItemGridItem({
   size,
   priority
 }: {
-  item: Product;
-  size: 'full' | 'half';
-  priority?: boolean;
+  item: Product
+  size: 'full' | 'half'
+  priority?: boolean
 }) {
   return (
     <div

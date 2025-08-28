@@ -1,6 +1,5 @@
+import { getPolicy, Policy } from 'lib/shopify'
 import { notFound } from 'next/navigation'
-import { getPolicy } from 'lib/shopify'
-import { Policy } from 'lib/shopify/types'
 
 export default async function PolicyPage({
   params,

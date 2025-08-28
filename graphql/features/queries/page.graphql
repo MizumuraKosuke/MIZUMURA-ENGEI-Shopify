@@ -1,0 +1,17 @@
+#import "../fragments/page.graphql"
+
+query getPage($handle: String!) {
+  pageByHandle(handle: $handle) {
+    ...page
+  }
+}
+
+query getPages {
+  pages(first: 100) {
+    edges {
+      node {
+        ...page
+      }
+    }
+  }
+}

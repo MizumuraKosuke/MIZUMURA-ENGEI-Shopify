@@ -5,11 +5,11 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Fragment, Suspense, useEffect, useState } from 'react'
 
-import { Bars3Icon, XMarkIcon, UserIcon } from '@heroicons/react/24/outline'
-import { Menu } from 'lib/shopify/types'
+import { Bars3Icon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { MenuItem } from 'graphql/generated/graphql'
 import Search, { SearchSkeleton } from './search'
 
-export default function MobileMenu({ menu }: { menu: Menu[] }) {
+export default function MobileMenu({ menu }: { menu: MenuItem[] }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isOpen, setIsOpen] = useState(false)
@@ -77,12 +77,12 @@ export default function MobileMenu({ menu }: { menu: Menu[] }) {
                   </Suspense>
                 </div>
                 <ul className="flex w-full flex-col">
-                  {menu.length ? menu.map((item: Menu) => (
+                  {menu.length ? menu.map((item: MenuItem) => (
                     <li
                       className="py-2 text-xl text-black transition-colors hover:text-neutral-500 dark:text-white"
                       key={item.title}
                     >
-                      <Link href={item.path} prefetch={true} onClick={closeMobileMenu}>
+                      <Link href={item.url || '#'} prefetch={true} onClick={closeMobileMenu}>
                         {item.title}
                       </Link>
                     </li>

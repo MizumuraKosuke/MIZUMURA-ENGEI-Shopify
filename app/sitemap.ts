@@ -3,9 +3,9 @@ import { baseUrl, validateEnvironmentVariables } from 'lib/utils'
 import { MetadataRoute } from 'next'
 
 type Route = {
-  url: string;
-  lastModified: string;
-};
+  url: string
+  lastModified: string
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const collectionsPromise = getCollections().then((collections) =>
     collections.map((collection) => ({
-      url: `${baseUrl}${collection.path}`,
+      url: `${baseUrl}${collection.handle}`,
       lastModified: collection.updatedAt
     }))
   )
