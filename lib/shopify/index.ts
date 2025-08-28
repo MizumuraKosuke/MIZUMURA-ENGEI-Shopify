@@ -6,7 +6,6 @@ import { revalidateTag } from 'next/cache'
 import { cookies, headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { apolloClient } from '../apollo/client'
-import { gql } from '@apollo/client'
 import {
   addToCartMutation,
   createCartMutation,
@@ -61,6 +60,8 @@ type ExtractVariables<T> = T extends { variables: object }
   ? T['variables']
   : never;
 
+import type { DocumentNode } from 'graphql'
+
 export async function shopifyFetch<T>({
   headers,
   query,
@@ -68,7 +69,7 @@ export async function shopifyFetch<T>({
   isQuery = true
 }: {
   headers?: HeadersInit;
-  query: string;
+  query: DocumentNode;
   variables?: ExtractVariables<T>;
   isQuery?: boolean;
 }): Promise<{ status: number; body: T } | never> {
@@ -76,7 +77,7 @@ export async function shopifyFetch<T>({
     let result
     if (isQuery) {
       result = await apolloClient.query({
-        query: gql`${query}`,
+        query,
         variables: variables || {},
         context: {
           headers: headers || {}
@@ -84,7 +85,7 @@ export async function shopifyFetch<T>({
       })
     } else {
       result = await apolloClient.mutate({
-        mutation: gql`${query}`,
+        mutation: query,
         variables: variables || {},
         context: {
           headers: headers || {}

@@ -1,6 +1,7 @@
+import { gql } from '@apollo/client'
 import policyFragment from '../fragments/policy'
 
-export const getPolicyQuery = /* GraphQL */ `
+export const getPolicyQuery = gql`
   ${policyFragment}
   query getPolicy(
     $privacyPolicy: Boolean!

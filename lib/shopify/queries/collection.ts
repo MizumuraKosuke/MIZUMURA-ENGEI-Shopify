@@ -1,7 +1,8 @@
+import { gql } from '@apollo/client'
 import productFragment from '../fragments/product'
 import seoFragment from '../fragments/seo'
 
-const collectionFragment = /* GraphQL */ `
+const collectionFragment = gql`
   fragment collection on Collection {
     handle
     title
@@ -14,7 +15,7 @@ const collectionFragment = /* GraphQL */ `
   ${seoFragment}
 `
 
-export const getCollectionQuery = /* GraphQL */ `
+export const getCollectionQuery = gql`
   query getCollection($handle: String!) {
     collection(handle: $handle) {
       ...collection
@@ -23,7 +24,7 @@ export const getCollectionQuery = /* GraphQL */ `
   ${collectionFragment}
 `
 
-export const getCollectionsQuery = /* GraphQL */ `
+export const getCollectionsQuery = gql`
   query getCollections {
     collections(first: 100, sortKey: TITLE) {
       edges {
@@ -36,7 +37,7 @@ export const getCollectionsQuery = /* GraphQL */ `
   ${collectionFragment}
 `
 
-export const getCollectionProductsQuery = /* GraphQL */ `
+export const getCollectionProductsQuery = gql`
   query getCollectionProducts(
     $handle: String!
     $sortKey: ProductCollectionSortKeys

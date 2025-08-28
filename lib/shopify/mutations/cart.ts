@@ -1,6 +1,7 @@
+import { gql } from '@apollo/client'
 import cartFragment from '../fragments/cart'
 
-export const addToCartMutation = /* GraphQL */ `
+export const addToCartMutation = gql`
   mutation addToCart($cartId: ID!, $lines: [CartLineInput!]!) {
     cartLinesAdd(cartId: $cartId, lines: $lines) {
       cart {
@@ -11,7 +12,7 @@ export const addToCartMutation = /* GraphQL */ `
   ${cartFragment}
 `
 
-export const createCartMutation = /* GraphQL */ `
+export const createCartMutation = gql`
   mutation createCart($lineItems: [CartLineInput!]) {
     cartCreate(input: { lines: $lineItems }) {
       cart {
@@ -22,7 +23,7 @@ export const createCartMutation = /* GraphQL */ `
   ${cartFragment}
 `
 
-export const editCartItemsMutation = /* GraphQL */ `
+export const editCartItemsMutation = gql`
   mutation editCartItems($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
     cartLinesUpdate(cartId: $cartId, lines: $lines) {
       cart {
@@ -33,7 +34,7 @@ export const editCartItemsMutation = /* GraphQL */ `
   ${cartFragment}
 `
 
-export const removeFromCartMutation = /* GraphQL */ `
+export const removeFromCartMutation = gql`
   mutation removeFromCart($cartId: ID!, $lineIds: [ID!]!) {
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
       cart {

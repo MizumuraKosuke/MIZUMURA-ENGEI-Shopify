@@ -1,6 +1,7 @@
+import { gql } from '@apollo/client'
 import productFragment from '../fragments/product'
 
-export const getProductQuery = /* GraphQL */ `
+export const getProductQuery = gql`
   query getProduct($handle: String!) {
     product(handle: $handle) {
       ...product
@@ -9,7 +10,7 @@ export const getProductQuery = /* GraphQL */ `
   ${productFragment}
 `
 
-export const getProductsQuery = /* GraphQL */ `
+export const getProductsQuery = gql`
   query getProducts($sortKey: ProductSortKeys, $reverse: Boolean, $query: String) {
     products(sortKey: $sortKey, reverse: $reverse, query: $query, first: 100) {
       edges {
@@ -22,7 +23,7 @@ export const getProductsQuery = /* GraphQL */ `
   ${productFragment}
 `
 
-export const getProductRecommendationsQuery = /* GraphQL */ `
+export const getProductRecommendationsQuery = gql`
   query getProductRecommendations($productId: ID!) {
     productRecommendations(productId: $productId) {
       ...product

@@ -1,6 +1,7 @@
+import { gql } from '@apollo/client'
 import seoFragment from '../fragments/seo'
 
-const pageFragment = /* GraphQL */ `
+const pageFragment = gql`
   fragment page on Page {
     ... on Page {
       id
@@ -18,7 +19,7 @@ const pageFragment = /* GraphQL */ `
   ${seoFragment}
 `
 
-export const getPageQuery = /* GraphQL */ `
+export const getPageQuery = gql`
   query getPage($handle: String!) {
     pageByHandle(handle: $handle) {
       ...page
@@ -27,7 +28,7 @@ export const getPageQuery = /* GraphQL */ `
   ${pageFragment}
 `
 
-export const getPagesQuery = /* GraphQL */ `
+export const getPagesQuery = gql`
   query getPages {
     pages(first: 100) {
       edges {
