@@ -19,6 +19,49 @@ export const ensureStartsWith = (stringToCheck: string, startsWith: string) =>
     ? stringToCheck
     : `${startsWith}${stringToCheck}`
 
+/**
+ * Shopifyのcheckout URLをmyshopifyドメインに変換する
+ * Primary domainが設定されている場合でも、checkoutだけは.myshopify.comドメインを使用する
+ */
+export const convertToMyshopifyCheckoutUrl = (checkoutUrl: string): string => {
+  const shopDomain = process.env.SHOPIFY_STORE_DOMAIN
+  
+  console.log('Original checkout URL:', checkoutUrl)
+  
+  if (!shopDomain) {
+    console.warn('SHOPIFY_STORE_DOMAIN not set, using original checkout URL')
+    return checkoutUrl
+  }
+
+  try {
+    const url = new URL(checkoutUrl)
+    
+    // 既にmyshopifyドメインの場合はそのまま返す
+    if (url.hostname.endsWith('.myshopify.com')) {
+      console.log('Already myshopify domain, returning as-is')
+      return checkoutUrl
+    }
+
+    // Primary domainからmyshopifyドメインに変換
+    const originalHostname = url.hostname
+    url.hostname = shopDomain
+    
+    // カートURL (/cart/c/...) をチェックアウトURL (/checkouts/cn/...) に変換
+    if (url.pathname.startsWith('/cart/c/')) {
+      url.pathname = url.pathname.replace('/cart/c/', '/checkouts/cn/')
+    }
+    
+    const convertedUrl = url.toString()
+    console.log(`Converted checkout URL: ${originalHostname} -> ${shopDomain}`)
+    console.log('Final checkout URL:', convertedUrl)
+    
+    return convertedUrl
+  } catch (error) {
+    console.error('Failed to convert checkout URL:', error)
+    return checkoutUrl
+  }
+}
+
 export const validateEnvironmentVariables = () => {
   const requiredEnvironmentVariables = [
     'SHOPIFY_STORE_DOMAIN',

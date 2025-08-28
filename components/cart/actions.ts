@@ -36,7 +36,7 @@ export async function removeItem(prevState: any, merchandiseId: string) {
       return 'Error fetching cart'
     }
 
-    const lineItem = cart.lines.edges.find(
+    const lineItem = cart?.lines?.edges?.find(
       ({ node: line }) => line.merchandise.id === merchandiseId
     )?.node
 
@@ -67,7 +67,7 @@ export async function updateItemQuantity(
       return 'Error fetching cart'
     }
 
-    const lineItem = cart.lines.edges.find(
+    const lineItem = cart?.lines?.edges?.find(
       ({ node: line }) => line.merchandise.id === merchandiseId
     )?.node
 
@@ -97,7 +97,9 @@ export async function updateItemQuantity(
 
 export async function redirectToCheckout() {
   const cart = await getCart()
-  redirect(cart!.checkoutUrl)
+  const { convertToMyshopifyCheckoutUrl } = await import('lib/utils')
+  const checkoutUrl = convertToMyshopifyCheckoutUrl(cart!.checkoutUrl)
+  redirect(checkoutUrl)
 }
 
 export async function createCartAndSetCookie() {
