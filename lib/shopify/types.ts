@@ -270,3 +270,30 @@ export type ShopifyProductsOperation = {
     sortKey?: string;
   };
 };
+
+export type Policy = {
+  body: string;
+  handle: string;
+  id: string;
+  title: string;
+  url: string;
+};
+
+export type Shop = {
+  privacyPolicy?: Policy;
+  refundPolicy?: Policy;
+  shippingPolicy?: Policy;
+  termsOfService?: Policy;
+};
+
+export type ShopifyPolicyOperation = {
+  data: {
+    shop: Shop;
+  };
+  variables: {
+    privacyPolicy: boolean;
+    refundPolicy: boolean;
+    shippingPolicy: boolean;
+    termsOfService: boolean;
+  };
+};

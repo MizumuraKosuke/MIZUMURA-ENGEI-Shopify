@@ -22,6 +22,7 @@ import {
 } from './queries/collection'
 import { getMenuQuery } from './queries/menu'
 import { getPageQuery, getPagesQuery } from './queries/page'
+import { getPolicyQuery } from './queries/policy'
 import {
   getProductQuery,
   getProductRecommendationsQuery,
@@ -34,7 +35,9 @@ import {
   Image,
   Menu,
   Page,
+  Policy,
   Product,
+  Shop,
   ShopifyAddToCartOperation,
   ShopifyCart,
   ShopifyCartOperation,
@@ -46,6 +49,7 @@ import {
   ShopifyMenuOperation,
   ShopifyPageOperation,
   ShopifyPagesOperation,
+  ShopifyPolicyOperation,
   ShopifyProduct,
   ShopifyProductOperation,
   ShopifyProductRecommendationsOperation,
@@ -435,6 +439,28 @@ export async function getProducts({
   })
 
   return reshapeProducts(removeEdgesAndNodes(res.body.data.products))
+}
+
+export async function getPolicy(handle: string): Promise<Policy | undefined> {
+  const decodedHandle = decodeURIComponent(handle)
+  
+  const policyName = decodedHandle.replace(
+    /-([a-z])/g,
+    (_: unknown, m1: string) => m1.toUpperCase(),
+  ) as keyof Pick<Shop, 'privacyPolicy' | 'shippingPolicy' | 'termsOfService' | 'refundPolicy'>
+
+  const res = await shopifyFetch<ShopifyPolicyOperation>({
+    query: getPolicyQuery,
+    variables: {
+      privacyPolicy: policyName === 'privacyPolicy',
+      refundPolicy: policyName === 'refundPolicy',
+      shippingPolicy: policyName === 'shippingPolicy',
+      termsOfService: policyName === 'termsOfService'
+    }
+  })
+
+  const shop = res.body.data.shop
+  return shop[policyName] || undefined
 }
 
 // This is called from `app/api/revalidate.ts` so providers can control revalidation logic.
