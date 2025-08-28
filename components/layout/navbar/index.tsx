@@ -2,6 +2,7 @@ import CartModal from 'components/cart/modal'
 import LogoSquare from 'components/logo-square'
 import { getMenu } from 'lib/shopify'
 import { Menu } from 'lib/shopify/types'
+import { UserIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import MobileMenu from './mobile-menu'
@@ -52,7 +53,14 @@ export async function Navbar() {
             <Search />
           </Suspense>
         </div>
-        <div className="flex justify-end md:w-1/3">
+        <div className="flex justify-end items-center gap-3 md:w-1/3">
+          <Link
+            href="https://shopify.com/90658537656/account"
+            className="flex items-center justify-center rounded-md border border-neutral-200 p-2 text-black transition-colors hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-700 dark:text-white dark:hover:border-neutral-600 dark:hover:bg-neutral-800"
+            aria-label="Account"
+          >
+            <UserIcon className="h-5 w-5" />
+          </Link>
           <CartModal />
         </div>
       </div>

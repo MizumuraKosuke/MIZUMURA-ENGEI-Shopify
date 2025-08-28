@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Fragment, Suspense, useEffect, useState } from 'react'
 
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, XMarkIcon, UserIcon } from '@heroicons/react/24/outline'
 import { Menu } from 'lib/shopify/types'
 import Search, { SearchSkeleton } from './search'
 
@@ -76,20 +76,28 @@ export default function MobileMenu({ menu }: { menu: Menu[] }) {
                     <Search />
                   </Suspense>
                 </div>
-                {menu.length ? (
-                  <ul className="flex w-full flex-col">
-                    {menu.map((item: Menu) => (
-                      <li
-                        className="py-2 text-xl text-black transition-colors hover:text-neutral-500 dark:text-white"
-                        key={item.title}
-                      >
-                        <Link href={item.path} prefetch={true} onClick={closeMobileMenu}>
-                          {item.title}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
+                <ul className="flex w-full flex-col">
+                  {menu.length ? menu.map((item: Menu) => (
+                    <li
+                      className="py-2 text-xl text-black transition-colors hover:text-neutral-500 dark:text-white"
+                      key={item.title}
+                    >
+                      <Link href={item.path} prefetch={true} onClick={closeMobileMenu}>
+                        {item.title}
+                      </Link>
+                    </li>
+                  )) : null}
+                  <li className="py-2 text-xl text-black transition-colors hover:text-neutral-500 dark:text-white">
+                    <Link
+                      href="https://shopify.com/90658537656/account"
+                      className="flex items-center gap-2"
+                      onClick={closeMobileMenu}
+                    >
+                      <UserIcon className="h-5 w-5" />
+                      Account
+                    </Link>
+                  </li>
+                </ul>
               </div>
             </Dialog.Panel>
           </Transition.Child>
