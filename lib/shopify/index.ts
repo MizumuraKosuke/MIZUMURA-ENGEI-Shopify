@@ -1,13 +1,12 @@
 import {
   HIDDEN_PRODUCT_TAG,
-  SHOPIFY_GRAPHQL_API_ENDPOINT,
   TAGS
 } from 'lib/constants'
-import { isShopifyError } from 'lib/type-guards'
-import { ensureStartsWith } from 'lib/utils'
 import { revalidateTag } from 'next/cache'
 import { cookies, headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
+import { apolloClient } from '../apollo/client'
+import { gql } from '@apollo/client'
 import {
   addToCartMutation,
   createCartMutation,
@@ -58,12 +57,6 @@ import {
   ShopifyUpdateCartOperation
 } from './types'
 
-const domain = process.env.SHOPIFY_STORE_DOMAIN
-  ? ensureStartsWith(process.env.SHOPIFY_STORE_DOMAIN, 'https://')
-  : ''
-const endpoint = `${domain}${SHOPIFY_GRAPHQL_API_ENDPOINT}`
-const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!
-
 type ExtractVariables<T> = T extends { variables: object }
   ? T['variables']
   : never;
@@ -71,42 +64,53 @@ type ExtractVariables<T> = T extends { variables: object }
 export async function shopifyFetch<T>({
   headers,
   query,
-  variables
+  variables,
+  isQuery = true
 }: {
   headers?: HeadersInit;
   query: string;
   variables?: ExtractVariables<T>;
+  isQuery?: boolean;
 }): Promise<{ status: number; body: T } | never> {
   try {
-    const result = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': key,
-        ...headers
-      },
-      body: JSON.stringify({
-        ...(query && { query }),
-        ...(variables && { variables })
+    let result
+    if (isQuery) {
+      result = await apolloClient.query({
+        query: gql`${query}`,
+        variables: variables || {},
+        context: {
+          headers: headers || {}
+        }
       })
-    })
-
-    const body = await result.json()
-
-    if (body.errors) {
-      throw body.errors[0]
+    } else {
+      result = await apolloClient.mutate({
+        mutation: gql`${query}`,
+        variables: variables || {},
+        context: {
+          headers: headers || {}
+        }
+      })
     }
 
     return {
-      status: result.status,
-      body
+      status: 200,
+      body: { data: result.data } as T
     }
-  } catch (e) {
-    if (isShopifyError(e)) {
+  } catch (e: any) {
+    if (e.graphQLErrors && e.graphQLErrors.length > 0) {
       throw {
-        cause: e.cause?.toString() || 'unknown',
-        status: e.status || 500,
-        message: e.message,
+        cause: e.graphQLErrors[0].message || 'GraphQL error',
+        status: 500,
+        message: e.graphQLErrors[0].message,
+        query
+      }
+    }
+
+    if (e.networkError) {
+      throw {
+        cause: e.networkError.message || 'Network error',
+        status: e.networkError.statusCode || 500,
+        message: e.networkError.message,
         query
       }
     }
@@ -215,7 +219,8 @@ const reshapeProducts = (products: ShopifyProduct[]) => {
 
 export async function createCart(): Promise<Cart> {
   const res = await shopifyFetch<ShopifyCreateCartOperation>({
-    query: createCartMutation
+    query: createCartMutation,
+    isQuery: false
   })
 
   return reshapeCart(res.body.data.cartCreate.cart)
@@ -230,7 +235,8 @@ export async function addToCart(
     variables: {
       cartId,
       lines
-    }
+    },
+    isQuery: false
   })
   return reshapeCart(res.body.data.cartLinesAdd.cart)
 }
@@ -242,7 +248,8 @@ export async function removeFromCart(lineIds: string[]): Promise<Cart> {
     variables: {
       cartId,
       lineIds
-    }
+    },
+    isQuery: false
   })
 
   return reshapeCart(res.body.data.cartLinesRemove.cart)
@@ -257,7 +264,8 @@ export async function updateCart(
     variables: {
       cartId,
       lines
-    }
+    },
+    isQuery: false
   })
 
   return reshapeCart(res.body.data.cartLinesUpdate.cart)
@@ -367,7 +375,7 @@ export async function getMenu(handle: string): Promise<Menu[]> {
     res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
       title: item.title,
       path: item.url
-        .replace(domain, '')
+        .replace(process.env.SHOPIFY_STORE_DOMAIN || '', '')
         .replace('/collections', '/search')
         .replace('/pages', '')
     })) || []
