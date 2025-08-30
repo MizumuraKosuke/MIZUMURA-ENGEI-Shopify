@@ -7,7 +7,8 @@ import {
   createCart,
   getCart,
   removeFromCart,
-  updateCart
+  updateCartBuyerIdentity as updateBuyerIdentity,
+  updateCart,
 } from 'lib/shopify'
 import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
@@ -116,9 +117,7 @@ export async function redirectToCheckout() {
   redirect(cart!.checkoutUrl)
 }
 
-async function updateCartBuyerIdentity(cartId: string, email: string) {  
-  const { updateCartBuyerIdentity: updateBuyerIdentity } = await import('lib/shopify')
-  
+async function updateCartBuyerIdentity(cartId: string, email: string) {    
   try {
     await updateBuyerIdentity(cartId, email)
   } catch {
