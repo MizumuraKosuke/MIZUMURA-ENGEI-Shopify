@@ -99,22 +99,31 @@ export async function updateItemQuantity(
 export async function redirectToCheckout() {
   const cart = await getCart()
   
-  // ShopifyのカートURLを適切なチェックアウトURLに変換
-  let checkoutUrl = cart!.checkoutUrl
-  
-  // カートURL (/cart/c/...) をチェックアウトURL形式に変換
-  if (checkoutUrl.includes('/cart/c/')) {
-    const shopDomain = process.env.SHOPIFY_STORE_DOMAIN
-    if (shopDomain) {
-      // URLを解析してパスとパラメータを取得
-      const url = new URL(checkoutUrl, `https://${shopDomain}`)
-      // /cart/c/... を /checkouts/cn/... に変換
-      const newPath = url.pathname.replace('/cart/c/', '/checkouts/cn/')
-      checkoutUrl = `https://${shopDomain}${newPath}${url.search}`
+  // Update buyer identity if customer is logged in (Hydrogen pattern)
+  try {
+    const customerAccount = new CustomerAccount()
+    const customer = await customerAccount.getCustomer()
+    
+    if (customer && cart?.id) {
+      // Update cart with customer information before checkout
+      await updateCartBuyerIdentity(cart.id, customer.emailAddress.emailAddress)
     }
+  } catch {
+    // Customer not logged in, continue with checkout
   }
   
-  redirect(checkoutUrl)
+  // Use the checkout URL directly (trust Shopify's API)
+  redirect(cart!.checkoutUrl)
+}
+
+async function updateCartBuyerIdentity(cartId: string, email: string) {  
+  const { updateCartBuyerIdentity: updateBuyerIdentity } = await import('lib/shopify')
+  
+  try {
+    await updateBuyerIdentity(cartId, email)
+  } catch {
+    // Ignore errors, checkout will still work
+  }
 }
 
 export async function createCartAndSetCookie() {

@@ -39,7 +39,9 @@ import type {
   Product,
   RemoveFromCartMutation,
   RemoveFromCartMutationVariables,
-  Shop
+  Shop,
+  UpdateCartBuyerIdentityMutation,
+  UpdateCartBuyerIdentityMutationVariables
 } from '../../graphql/generated/graphql'
 import {
   AddToCart,
@@ -58,7 +60,8 @@ import {
   GetProducts,
   ProductCollectionSortKeys,
   ProductSortKeys,
-  RemoveFromCart
+  RemoveFromCart,
+  UpdateCartBuyerIdentity
 } from '../../graphql/generated/graphql'
 import { apolloClient } from '../apollo/client'
 
@@ -194,6 +197,23 @@ export async function updateCart(
   })
 
   return res.body.data.cartLinesUpdate!.cart! as Cart
+}
+
+export async function updateCartBuyerIdentity(cartId: string, email: string): Promise<Cart> {
+  const res = await shopifyFetch<{ data: UpdateCartBuyerIdentityMutation }, UpdateCartBuyerIdentityMutationVariables>(
+    {
+      query: UpdateCartBuyerIdentity,
+      variables: {
+        cartId,
+        buyerIdentity: {
+          email
+        }
+      },
+      isQuery: false
+    }
+  )
+
+  return res.body.data.cartBuyerIdentityUpdate!.cart! as Cart
 }
 
 export async function getCart(): Promise<Cart | undefined> {

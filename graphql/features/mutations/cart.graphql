@@ -31,3 +31,11 @@ mutation removeFromCart($cartId: ID!, $lineIds: [ID!]!) {
     }
   }
 }
+
+mutation updateCartBuyerIdentity($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
+  cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
+    cart {
+      ...cart
+    }
+  }
+}

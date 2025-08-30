@@ -9906,6 +9906,258 @@ export type RemoveFromCartMutation = {
   } | null;
 };
 
+export type UpdateCartBuyerIdentityMutationVariables = Exact<{
+  cartId: Scalars["ID"]["input"];
+  buyerIdentity: CartBuyerIdentityInput;
+}>;
+
+export type UpdateCartBuyerIdentityMutation = {
+  __typename?: "Mutation";
+  cartBuyerIdentityUpdate?: {
+    __typename?: "CartBuyerIdentityUpdatePayload";
+    cart?: {
+      __typename?: "Cart";
+      id: string;
+      checkoutUrl: string;
+      totalQuantity: number;
+      buyerIdentity: {
+        __typename?: "CartBuyerIdentity";
+        email?: string | null;
+        customer?: {
+          __typename?: "Customer";
+          id: string;
+          email?: string | null;
+        } | null;
+      };
+      cost: {
+        __typename?: "CartCost";
+        subtotalAmount: {
+          __typename?: "MoneyV2";
+          amount: string;
+          currencyCode: CurrencyCode;
+        };
+        totalAmount: {
+          __typename?: "MoneyV2";
+          amount: string;
+          currencyCode: CurrencyCode;
+        };
+        totalTaxAmount?: {
+          __typename?: "MoneyV2";
+          amount: string;
+          currencyCode: CurrencyCode;
+        } | null;
+      };
+      lines: {
+        __typename?: "BaseCartLineConnection";
+        edges: Array<{
+          __typename?: "BaseCartLineEdge";
+          node:
+            | {
+                __typename?: "CartLine";
+                id: string;
+                quantity: number;
+                cost: {
+                  __typename?: "CartLineCost";
+                  totalAmount: {
+                    __typename?: "MoneyV2";
+                    amount: string;
+                    currencyCode: CurrencyCode;
+                  };
+                };
+                merchandise: {
+                  __typename?: "ProductVariant";
+                  id: string;
+                  title: string;
+                  selectedOptions: Array<{
+                    __typename?: "SelectedOption";
+                    name: string;
+                    value: string;
+                  }>;
+                  product: {
+                    __typename?: "Product";
+                    id: string;
+                    handle: string;
+                    availableForSale: boolean;
+                    title: string;
+                    description: string;
+                    descriptionHtml: string;
+                    tags: Array<string>;
+                    updatedAt: string;
+                    options: Array<{
+                      __typename?: "ProductOption";
+                      id: string;
+                      name: string;
+                      values: Array<string>;
+                    }>;
+                    priceRange: {
+                      __typename?: "ProductPriceRange";
+                      maxVariantPrice: {
+                        __typename?: "MoneyV2";
+                        amount: string;
+                        currencyCode: CurrencyCode;
+                      };
+                      minVariantPrice: {
+                        __typename?: "MoneyV2";
+                        amount: string;
+                        currencyCode: CurrencyCode;
+                      };
+                    };
+                    variants: {
+                      __typename?: "ProductVariantConnection";
+                      edges: Array<{
+                        __typename?: "ProductVariantEdge";
+                        node: {
+                          __typename?: "ProductVariant";
+                          id: string;
+                          title: string;
+                          availableForSale: boolean;
+                          selectedOptions: Array<{
+                            __typename?: "SelectedOption";
+                            name: string;
+                            value: string;
+                          }>;
+                          price: {
+                            __typename?: "MoneyV2";
+                            amount: string;
+                            currencyCode: CurrencyCode;
+                          };
+                        };
+                      }>;
+                    };
+                    featuredImage?: {
+                      __typename?: "Image";
+                      url: string;
+                      altText?: string | null;
+                      width?: number | null;
+                      height?: number | null;
+                    } | null;
+                    images: {
+                      __typename?: "ImageConnection";
+                      edges: Array<{
+                        __typename?: "ImageEdge";
+                        node: {
+                          __typename?: "Image";
+                          url: string;
+                          altText?: string | null;
+                          width?: number | null;
+                          height?: number | null;
+                        };
+                      }>;
+                    };
+                    seo: {
+                      __typename?: "SEO";
+                      description?: string | null;
+                      title?: string | null;
+                    };
+                  };
+                };
+              }
+            | {
+                __typename?: "ComponentizableCartLine";
+                id: string;
+                quantity: number;
+                cost: {
+                  __typename?: "CartLineCost";
+                  totalAmount: {
+                    __typename?: "MoneyV2";
+                    amount: string;
+                    currencyCode: CurrencyCode;
+                  };
+                };
+                merchandise: {
+                  __typename?: "ProductVariant";
+                  id: string;
+                  title: string;
+                  selectedOptions: Array<{
+                    __typename?: "SelectedOption";
+                    name: string;
+                    value: string;
+                  }>;
+                  product: {
+                    __typename?: "Product";
+                    id: string;
+                    handle: string;
+                    availableForSale: boolean;
+                    title: string;
+                    description: string;
+                    descriptionHtml: string;
+                    tags: Array<string>;
+                    updatedAt: string;
+                    options: Array<{
+                      __typename?: "ProductOption";
+                      id: string;
+                      name: string;
+                      values: Array<string>;
+                    }>;
+                    priceRange: {
+                      __typename?: "ProductPriceRange";
+                      maxVariantPrice: {
+                        __typename?: "MoneyV2";
+                        amount: string;
+                        currencyCode: CurrencyCode;
+                      };
+                      minVariantPrice: {
+                        __typename?: "MoneyV2";
+                        amount: string;
+                        currencyCode: CurrencyCode;
+                      };
+                    };
+                    variants: {
+                      __typename?: "ProductVariantConnection";
+                      edges: Array<{
+                        __typename?: "ProductVariantEdge";
+                        node: {
+                          __typename?: "ProductVariant";
+                          id: string;
+                          title: string;
+                          availableForSale: boolean;
+                          selectedOptions: Array<{
+                            __typename?: "SelectedOption";
+                            name: string;
+                            value: string;
+                          }>;
+                          price: {
+                            __typename?: "MoneyV2";
+                            amount: string;
+                            currencyCode: CurrencyCode;
+                          };
+                        };
+                      }>;
+                    };
+                    featuredImage?: {
+                      __typename?: "Image";
+                      url: string;
+                      altText?: string | null;
+                      width?: number | null;
+                      height?: number | null;
+                    } | null;
+                    images: {
+                      __typename?: "ImageConnection";
+                      edges: Array<{
+                        __typename?: "ImageEdge";
+                        node: {
+                          __typename?: "Image";
+                          url: string;
+                          altText?: string | null;
+                          width?: number | null;
+                          height?: number | null;
+                        };
+                      }>;
+                    };
+                    seo: {
+                      __typename?: "SEO";
+                      description?: string | null;
+                      title?: string | null;
+                    };
+                  };
+                };
+              };
+        }>;
+      };
+    } | null;
+  } | null;
+};
+
 export type GetCartQueryVariables = Exact<{
   cartId: Scalars["ID"]["input"];
 }>;
@@ -10872,6 +11124,19 @@ export const EditCartItems = gql`
 export const RemoveFromCart = gql`
   mutation removeFromCart($cartId: ID!, $lineIds: [ID!]!) {
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+      cart {
+        ...cart
+      }
+    }
+  }
+  ${Cart}
+`;
+export const UpdateCartBuyerIdentity = gql`
+  mutation updateCartBuyerIdentity(
+    $cartId: ID!
+    $buyerIdentity: CartBuyerIdentityInput!
+  ) {
+    cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
       cart {
         ...cart
       }
