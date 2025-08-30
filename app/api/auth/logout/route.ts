@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   
   // Generate Shopify logout URL with redirect back to our site
   const redirectUri = new URL('/', request.url).toString()
-  const logoutUrl = customerAccount.logout(redirectUri)
+  const logoutUrl = await customerAccount.logout(redirectUri)
   
   // Clear local session first
   await customerAccount.clearSession()

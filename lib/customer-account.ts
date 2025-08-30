@@ -107,6 +107,17 @@ export class CustomerAccount {
           sameSite: 'lax',
           maxAge: tokens.expires_in || 3600
         })
+        
+        // Store id_token if present (needed for logout)
+        if (tokens.id_token) {
+          console.log('ID token received')
+          cookieStore.set('customer_id_token', tokens.id_token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            maxAge: tokens.expires_in || 3600
+          })
+        }
       } else {
         console.error('No access_token in response:', tokens)
       }
@@ -179,12 +190,24 @@ export class CustomerAccount {
   }
 
   // Logout - Customer Account API pattern
-  logout(redirectUri: string) {
+  async logout(redirectUri: string) {
+    const cookieStore = await cookies()
+    const idToken = cookieStore.get('customer_id_token')?.value
+    
+    if (!idToken) {
+      console.warn('No id_token found, logout may not work properly')
+      // Still attempt logout without id_token_hint
+    }
+    
     const params = new URLSearchParams({
-      client_id: this.clientId,
-      redirect_uri: redirectUri
+      post_logout_redirect_uri: redirectUri
     })
-    const logoutUrl = `https://shopify.com/${this.shopId}/auth/logout`
+    
+    if (idToken) {
+      params.set('id_token_hint', idToken)
+    }
+    
+    const logoutUrl = `https://shopify.com/authentication/${this.shopId}/logout`
     return `${logoutUrl}?${params.toString()}`
   }
 
@@ -192,6 +215,7 @@ export class CustomerAccount {
   async clearSession() {
     const cookieStore = await cookies()
     cookieStore.delete('customer_access_token')
+    cookieStore.delete('customer_id_token')
   }
 
   // Get customer access token for buyer identity (if needed)
