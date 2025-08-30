@@ -97,9 +97,7 @@ export async function updateItemQuantity(
 
 export async function redirectToCheckout() {
   const cart = await getCart()
-  const { convertToMyshopifyCheckoutUrl } = await import('lib/utils')
-  const checkoutUrl = convertToMyshopifyCheckoutUrl(cart!.checkoutUrl)
-  redirect(checkoutUrl)
+  redirect(cart!.checkoutUrl)
 }
 
 export async function createCartAndSetCookie() {

@@ -55,7 +55,7 @@ export async function Navbar() {
         </div>
         <div className="flex justify-end items-center gap-3 md:w-1/3">
           <Link
-            href="https://shopify.com/90658537656/account"
+            href="/account"
             className="flex items-center justify-center rounded-md border border-neutral-200 p-2 text-black transition-colors hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-700 dark:text-white dark:hover:border-neutral-600 dark:hover:bg-neutral-800"
             aria-label="Account"
           >

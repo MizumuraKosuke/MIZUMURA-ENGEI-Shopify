@@ -89,7 +89,7 @@ export default function MobileMenu({ menu }: { menu: MenuItem[] }) {
                   )) : null}
                   <li className="py-2 text-xl text-black transition-colors hover:text-neutral-500 dark:text-white">
                     <Link
-                      href="https://shopify.com/90658537656/account"
+                      href="/account"
                       className="flex items-center gap-2"
                       onClick={closeMobileMenu}
                     >
