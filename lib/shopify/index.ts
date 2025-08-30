@@ -2,9 +2,8 @@ import {
   TAGS
 } from 'lib/constants'
 import { revalidateTag } from 'next/cache'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
-import { parseCookies } from 'nookies'
 import type {
   AddToCartMutation,
   AddToCartMutationVariables,
@@ -159,7 +158,7 @@ export async function createCart(customerEmail?: string): Promise<Cart> {
 export async function addToCart(
   lines: { merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
-  const cartId = parseCookies().cartId!
+  const cartId = (await cookies()).get('cartId')?.value!
   const res = await shopifyFetch<{ data: AddToCartMutation }, AddToCartMutationVariables>({
     query: AddToCart,
     variables: {
@@ -172,7 +171,7 @@ export async function addToCart(
 }
 
 export async function removeFromCart(lineIds: string[]): Promise<Cart> {
-  const cartId = parseCookies().cartId!
+  const cartId = (await cookies()).get('cartId')?.value!
   const res = await shopifyFetch<{ data: RemoveFromCartMutation }, RemoveFromCartMutationVariables>({
     query: RemoveFromCart,
     variables: {
@@ -188,7 +187,7 @@ export async function removeFromCart(lineIds: string[]): Promise<Cart> {
 export async function updateCart(
   lines: { id: string; merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
-  const cartId = parseCookies().cartId!
+  const cartId = (await cookies()).get('cartId')?.value!
   const res = await shopifyFetch<{ data: EditCartItemsMutation }, EditCartItemsMutationVariables>({
     query: EditCartItems,
     variables: {
@@ -219,7 +218,7 @@ export async function updateCartBuyerIdentity(cartId: string, email: string): Pr
 }
 
 export async function getCart(): Promise<Cart | undefined> {
-  const cartId = parseCookies().cartId
+  const cartId = (await cookies()).get('cartId')?.value
 
   if (!cartId) {
     return undefined

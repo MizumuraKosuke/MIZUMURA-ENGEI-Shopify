@@ -11,7 +11,7 @@ import {
   updateCart,
 } from 'lib/shopify'
 import { revalidateTag } from 'next/cache'
-import { setCookie } from 'nookies'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export async function addItem(
@@ -149,6 +149,6 @@ export async function createCartAndSetCookie() {
     customerEmail = undefined
   }
 
-  const cart = await createCart(customerEmail)
-  setCookie(null, 'cartId', cart.id!, { path: '/' })
+  const cart = await createCart(customerEmail);
+  (await cookies()).set('cartId', cart.id!)
 }

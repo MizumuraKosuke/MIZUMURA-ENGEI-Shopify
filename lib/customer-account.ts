@@ -1,4 +1,4 @@
-import { parseCookies, setCookie, destroyCookie } from 'nookies'
+import { cookies } from "next/headers"
 
 // Types for Customer Account API responses
 interface CustomerOrderEdge {
@@ -429,7 +429,7 @@ export class CustomerAccount {
 
   // Handle authorization callback
   async authorize(code: string, redirectUri: string) {
-    
+    const cookieStore = await cookies()
     try {
       // Exchange code for access token
       const tokenUrl = `https://shopify.com/authentication/${this.shopId}/oauth/token`
@@ -452,26 +452,13 @@ export class CustomerAccount {
       const tokens = JSON.parse(responseText)
       
       if (tokens.access_token) {
-        
-        // Store access token in secure cookie
-        setCookie(null, 'customer_access_token', tokens.access_token, {
+        // Store tokens using helper function
+        cookieStore.set('customer_access_token', tokens.access_token, {
           httpOnly: true,
           secure: true,
           sameSite: 'lax',
-          maxAge: tokens.expires_in || 3600,
-          path: '/'
+          maxAge: tokens.expires_in || 3600
         })
-        
-        // Store id_token if present (needed for logout)
-        if (tokens.id_token) {
-          setCookie(null, 'customer_id_token', tokens.id_token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'lax',
-            maxAge: tokens.expires_in || 3600,
-            path: '/'
-          })
-        }
       } else {
         throw new Error('No access_token in response')
       }
@@ -484,8 +471,7 @@ export class CustomerAccount {
 
   // Get current customer details from Customer Account API
   async getCustomer() {
-    const cookies = parseCookies()
-    const accessToken = cookies.customer_access_token
+    const accessToken = await this.getAccessToken()
     
     if (!accessToken) {
       return null
@@ -532,8 +518,8 @@ export class CustomerAccount {
 
   // Logout - Customer Account API pattern
   async logout(redirectUri: string) {
-    const cookies = parseCookies()
-    const idToken = cookies.customer_id_token
+    const cookieStore = await cookies()
+    const idToken = cookieStore.get('customer_id_token')?.value
     
     if (!idToken) {
       // Still attempt logout without id_token_hint
@@ -553,14 +539,15 @@ export class CustomerAccount {
 
   // Clear local session
   async clearSession() {
-    destroyCookie(null, 'customer_access_token', { path: '/' })
-    destroyCookie(null, 'customer_id_token', { path: '/' })
+    const cookieStore = await cookies()
+    cookieStore.delete('customer_access_token')
+    cookieStore.delete('customer_id_token')
   }
 
   // Get customer access token for buyer identity (if needed)
   async getAccessToken() {
-    const cookies = parseCookies()
-    return cookies.customer_access_token
+    const cookieStore = await cookies()
+    return cookieStore.get('customer_access_token')?.value
   }
 
   // Check if customer is logged in
@@ -767,9 +754,8 @@ export class CustomerAccount {
 
   // Get customer orders
   async getOrders(first: number = 20) {
-    const cookies = parseCookies()
-    const accessToken = cookies.customer_access_token
-    
+    const accessToken = await this.getAccessToken()
+
     if (!accessToken) {
       return null
     }
@@ -813,9 +799,8 @@ export class CustomerAccount {
 
   // Get specific order by ID
   async getOrder(orderId: string) {
-    const cookies = parseCookies()
-    const accessToken = cookies.customer_access_token
-    
+    const accessToken = await this.getAccessToken()
+
     if (!accessToken) {
       return null
     }

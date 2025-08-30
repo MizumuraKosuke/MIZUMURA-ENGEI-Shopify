@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { updateProfile } from '../../app/account/profile/actions'
+import { useCustomerProfile } from '../../hooks/useCustomer'
 
 interface Customer {
   firstName?: string
@@ -27,25 +29,15 @@ export default function ProfileForm({ customer }: ProfileFormProps) {
     setMessage(null)
 
     const formData = new FormData(e.currentTarget)
-    const profileData = {
-      firstName: formData.get('firstName') as string,
-      lastName: formData.get('lastName') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-    }
     
     try {
-      // Import CustomerAccount dynamically to avoid SSR issues
-      const { CustomerAccount } = await import('../../lib/customer-account')
-      const customerAccount = new CustomerAccount()
-      
-      await customerAccount.updateProfile(profileData)
-      setMessage({ type: 'success', text: 'プロフィールを更新しました。' })
-      
-      // Refresh page to show updated data
-      window.location.reload()
+      const result = await updateProfile(formData)
+      setMessage({ 
+        type: result.success ? 'success' : 'error', 
+        text: result.message 
+      })
     } catch (error) {
-      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'エラーが発生しました。再度お試しください。' })
+      setMessage({ type: 'error', text: 'エラーが発生しました。再度お試しください。' })
     } finally {
       setIsLoading(false)
     }
