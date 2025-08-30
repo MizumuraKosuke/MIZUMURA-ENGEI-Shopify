@@ -178,8 +178,18 @@ export class CustomerAccount {
     }
   }
 
-  // Logout
-  async logout() {
+  // Logout - Customer Account API pattern
+  logout(redirectUri: string) {
+    const params = new URLSearchParams({
+      client_id: this.clientId,
+      redirect_uri: redirectUri
+    })
+    const logoutUrl = `https://shopify.com/${this.shopId}/auth/logout`
+    return `${logoutUrl}?${params.toString()}`
+  }
+
+  // Clear local session
+  async clearSession() {
     const cookieStore = await cookies()
     cookieStore.delete('customer_access_token')
   }
