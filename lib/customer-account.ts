@@ -1,13 +1,18 @@
 import { cookies } from 'next/headers'
 
+// GraphQL Queries
 const CUSTOMER_DETAILS_QUERY = `#graphql
   query CustomerDetails {
     customer {
       id
       firstName
       lastName
+      displayName
       emailAddress {
         emailAddress
+      }
+      phoneNumber {
+        phoneNumber
       }
       defaultAddress {
         id
@@ -18,24 +23,105 @@ const CUSTOMER_DETAILS_QUERY = `#graphql
         address1
         address2
         city
-        territoryCode
+        province
+        country
         zip
         phoneNumber
       }
-      addresses(first: 6) {
-        nodes {
-          id
-          formatted
-          firstName
-          lastName
-          company
-          address1
-          address2
-          city
-          territoryCode
-          zip
+      addresses(first: 10) {
+        edges {
+          node {
+            id
+            formatted
+            firstName
+            lastName
+            company
+            address1
+            address2
+            city
+            province
+            country
+            zip
+            phoneNumber
+          }
+        }
+      }
+    }
+  }
+`
+
+// GraphQL Mutations
+const CUSTOMER_UPDATE_MUTATION = `#graphql
+  mutation customerUpdate($customer: CustomerUpdateInput!) {
+    customerUpdate(customer: $customer) {
+      customer {
+        id
+        firstName
+        lastName
+        emailAddress {
+          emailAddress
+        }
+        phoneNumber {
           phoneNumber
         }
+      }
+      customerUserErrors {
+        field
+        message
+      }
+    }
+  }
+`
+
+const CUSTOMER_ADDRESS_CREATE_MUTATION = `#graphql
+  mutation customerAddressCreate($address: CustomerAddressInput!) {
+    customerAddressCreate(address: $address) {
+      customerAddress {
+        id
+        formatted
+        firstName
+        lastName
+        company
+        address1
+        address2
+        city
+        province
+        country
+        zip
+        phoneNumber
+      }
+      customerUserErrors {
+        field
+        message
+      }
+    }
+  }
+`
+
+const CUSTOMER_ADDRESS_DELETE_MUTATION = `#graphql
+  mutation customerAddressDelete($id: ID!) {
+    customerAddressDelete(id: $id) {
+      deletedCustomerAddressId
+      customerUserErrors {
+        field
+        message
+      }
+    }
+  }
+`
+
+const CUSTOMER_DEFAULT_ADDRESS_UPDATE_MUTATION = `#graphql
+  mutation customerDefaultAddressUpdate($addressId: ID!) {
+    customerDefaultAddressUpdate(addressId: $addressId) {
+      customer {
+        id
+        defaultAddress {
+          id
+        }
+      }
+      customerUserErrors {
+        field
+        message
       }
     }
   }
@@ -73,7 +159,6 @@ export class CustomerAccount {
     try {
       // Exchange code for access token
       const tokenUrl = `https://shopify.com/authentication/${this.shopId}/oauth/token`
-      console.log('Exchanging token at:', tokenUrl)
       
       const tokenResponse = await fetch(tokenUrl, {
         method: 'POST',
@@ -88,17 +173,11 @@ export class CustomerAccount {
         })
       })
 
-      console.log('Token exchange response status:', tokenResponse.status)
-      
       const responseText = await tokenResponse.text()
-      console.log('Token exchange response text:', responseText)
       
       const tokens = JSON.parse(responseText)
-      console.log('Parsed tokens:', tokens)
       
       if (tokens.access_token) {
-        console.log('Access token received:', tokens.access_token)
-        console.log('Token starts with shcat_?', tokens.access_token.startsWith('shcat_'))
         
         // Store access token in secure cookie
         cookieStore.set('customer_access_token', tokens.access_token, {
@@ -110,7 +189,6 @@ export class CustomerAccount {
         
         // Store id_token if present (needed for logout)
         if (tokens.id_token) {
-          console.log('ID token received')
           cookieStore.set('customer_id_token', tokens.id_token, {
             httpOnly: true,
             secure: true,
@@ -119,10 +197,10 @@ export class CustomerAccount {
           })
         }
       } else {
-        console.error('No access_token in response:', tokens)
+        throw new Error('No access_token in response')
       }
     } catch (error) {
-      console.error('Token exchange failed:', error)
+      throw error
     }
     
     return { success: true }
@@ -133,11 +211,7 @@ export class CustomerAccount {
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('customer_access_token')?.value
     
-    console.log('Getting customer with token:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null')
-    console.log('Token starts with shcat_?', accessToken?.startsWith('shcat_'))
-    
     if (!accessToken) {
-      console.log('No access token found in cookies')
       return null
     }
 
@@ -145,46 +219,37 @@ export class CustomerAccount {
       // Customer Account API GraphQLエンドポイント (OAuth URLと同じ形式)
       // 最新APIバージョンを使用: 2025-07
       const graphqlUrl = `https://shopify.com/${this.shopId}/account/customer/api/2025-07/graphql`
-      console.log('Fetching customer from:', graphqlUrl)
-      console.log('Authorization header:', `${accessToken}`)
       
       const response = await fetch(graphqlUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `${accessToken}`,
+          'Authorization': accessToken,
         },
         body: JSON.stringify({
           query: CUSTOMER_DETAILS_QUERY
         })
       })
 
-      console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
-      
       const responseText = await response.text()
-      console.log('Response text:', responseText.substring(0, 200))
       
       if (!response.ok) {
-        console.error('API response not ok:', response.status, responseText)
         return null
       }
       
       const result = JSON.parse(responseText)
       
       if (result.errors) {
-        console.error('GraphQL errors:', result.errors)
         return null
       }
       
       if (!result.data?.customer) {
-        console.error('No customer data in response')
         return null
       }
 
       return result.data.customer
     } catch (error) {
-      console.error('Failed to fetch customer:', error)
+      console.warn('Error fetching customer details:', error)
       return null
     }
   }
@@ -195,7 +260,6 @@ export class CustomerAccount {
     const idToken = cookieStore.get('customer_id_token')?.value
     
     if (!idToken) {
-      console.warn('No id_token found, logout may not work properly')
       // Still attempt logout without id_token_hint
     }
     
@@ -231,6 +295,198 @@ export class CustomerAccount {
       return customer !== null
     } catch {
       return false
+    }
+  }
+
+  // Update customer profile
+  async updateProfile(profileData: {
+    firstName: string
+    lastName: string
+    email: string
+    phone?: string
+  }) {
+    const accessToken = await this.getAccessToken()
+    if (!accessToken) {
+      throw new Error('Not authenticated')
+    }
+
+    try {
+      const response = await fetch(`${this.apiUrl}/graphql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': accessToken
+        },
+        body: JSON.stringify({
+          query: CUSTOMER_UPDATE_MUTATION,
+          variables: {
+            customer: {
+              firstName: profileData.firstName,
+              lastName: profileData.lastName,
+              emailAddress: profileData.email,
+              phoneNumber: profileData.phone || null
+            }
+          }
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.errors) {
+        throw new Error(result.errors[0].message)
+      }
+
+      if (result.data.customerUpdate.customerUserErrors.length > 0) {
+        const errorMessage = result.data.customerUpdate.customerUserErrors
+          .map((error: { message: string }) => error.message)
+          .join(', ')
+        throw new Error(errorMessage)
+      }
+
+      return result.data.customerUpdate.customer
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // Create new address
+  async createAddress(addressData: {
+    firstName: string
+    lastName: string
+    company?: string
+    address1: string
+    address2?: string
+    city: string
+    province: string
+    zip: string
+    country: string
+    phone?: string
+  }) {
+    const accessToken = await this.getAccessToken()
+    if (!accessToken) {
+      throw new Error('Not authenticated')
+    }
+
+    try {
+      const response = await fetch(`${this.apiUrl}/graphql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': accessToken
+        },
+        body: JSON.stringify({
+          query: CUSTOMER_ADDRESS_CREATE_MUTATION,
+          variables: {
+            address: {
+              firstName: addressData.firstName,
+              lastName: addressData.lastName,
+              company: addressData.company || '',
+              address1: addressData.address1,
+              address2: addressData.address2 || '',
+              city: addressData.city,
+              province: addressData.province,
+              zip: addressData.zip,
+              country: addressData.country,
+              phoneNumber: addressData.phone || ''
+            }
+          }
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.errors) {
+        throw new Error(result.errors[0].message)
+      }
+
+      if (result.data.customerAddressCreate.customerUserErrors.length > 0) {
+        const errorMessage = result.data.customerAddressCreate.customerUserErrors
+          .map((error: { message: string }) => error.message)
+          .join(', ')
+        throw new Error(errorMessage)
+      }
+
+      return result.data.customerAddressCreate.customerAddress
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // Delete address
+  async deleteAddress(addressId: string) {
+    const accessToken = await this.getAccessToken()
+    if (!accessToken) {
+      throw new Error('Not authenticated')
+    }
+
+    try {
+      const response = await fetch(`${this.apiUrl}/graphql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': accessToken
+        },
+        body: JSON.stringify({
+          query: CUSTOMER_ADDRESS_DELETE_MUTATION,
+          variables: { id: addressId }
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.errors) {
+        throw new Error(result.errors[0].message)
+      }
+
+      if (result.data.customerAddressDelete.customerUserErrors.length > 0) {
+        const errorMessage = result.data.customerAddressDelete.customerUserErrors
+          .map((error: { message: string }) => error.message)
+          .join(', ')
+        throw new Error(errorMessage)
+      }
+
+      return result.data.customerAddressDelete.deletedCustomerAddressId
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // Set default address
+  async setDefaultAddress(addressId: string) {
+    const accessToken = await this.getAccessToken()
+    if (!accessToken) {
+      throw new Error('Not authenticated')
+    }
+
+    try {
+      const response = await fetch(`${this.apiUrl}/graphql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': accessToken
+        },
+        body: JSON.stringify({
+          query: CUSTOMER_DEFAULT_ADDRESS_UPDATE_MUTATION,
+          variables: { addressId }
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.errors) {
+        throw new Error(result.errors[0].message)
+      }
+
+      if (result.data.customerDefaultAddressUpdate.customerUserErrors.length > 0) {
+        const errorMessage = result.data.customerDefaultAddressUpdate.customerUserErrors
+          .map((error: { message: string }) => error.message)
+          .join(', ')
+        throw new Error(errorMessage)
+      }
+
+      return result.data.customerDefaultAddressUpdate.customer
+    } catch (error) {
+      throw error
     }
   }
 }
