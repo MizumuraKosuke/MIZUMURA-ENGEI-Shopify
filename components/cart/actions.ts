@@ -101,6 +101,7 @@ export async function redirectToCheckout() {
   const cart = await getCart()
   
   // Update buyer identity if customer is logged in (Hydrogen pattern)
+  let isCustomerLoggedIn = false
   try {
     const customerAccount = new CustomerAccount()
     const customer = await customerAccount.getCustomer()
@@ -108,13 +109,24 @@ export async function redirectToCheckout() {
     if (customer && cart?.id) {
       // Update cart with customer information before checkout
       await updateCartBuyerIdentity(cart.id, customer.emailAddress.emailAddress)
+      isCustomerLoggedIn = true
     }
   } catch {
     // Customer not logged in, continue with checkout
   }
   
-  // Use the checkout URL directly (trust Shopify's API)
-  redirect(cart!.checkoutUrl)
+  // Add logged_in=true parameter to maintain Customer Account API authentication in checkout
+  let checkoutUrl = cart!.checkoutUrl
+  if (isCustomerLoggedIn) {
+    const url = new URL(checkoutUrl)
+    url.searchParams.set('logged_in', 'true')
+    checkoutUrl = url.toString()
+    console.log('Customer logged in, modified checkout URL:', checkoutUrl)
+  } else {
+    console.log('Customer not logged in, using original checkout URL:', checkoutUrl)
+  }
+  
+  redirect(checkoutUrl)
 }
 
 async function updateCartBuyerIdentity(cartId: string, email: string) {    
@@ -131,8 +143,8 @@ export async function createCartAndSetCookie() {
   try {
     const customerAccount = new CustomerAccount()
     const customer = await customerAccount.getCustomer()
-    customerEmail = customer?.email
-  } catch (error) {
+    customerEmail = customer?.emailAddress?.emailAddress
+  } catch {
     // Customer not logged in or error fetching customer data
     customerEmail = undefined
   }

@@ -193,4 +193,20 @@ export class CustomerAccount {
     const cookieStore = await cookies()
     cookieStore.delete('customer_access_token')
   }
+
+  // Get customer access token for buyer identity (if needed)
+  async getAccessToken() {
+    const cookieStore = await cookies()
+    return cookieStore.get('customer_access_token')?.value
+  }
+
+  // Check if customer is logged in
+  async isLoggedIn(): Promise<boolean> {
+    try {
+      const customer = await this.getCustomer()
+      return customer !== null
+    } catch {
+      return false
+    }
+  }
 }
