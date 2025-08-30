@@ -137,9 +137,14 @@ const removeEdgesAndNodes = <T>(array: { edges: Array<{ node: T }> }): T[] => {
   return array.edges.map((edge) => edge?.node)
 }
 
-export async function createCart(): Promise<Cart> {
+export async function createCart(customerEmail?: string): Promise<Cart> {
+  const buyerIdentity = customerEmail ? { email: customerEmail } : undefined
+  
   const res = await shopifyFetch<{ data: CreateCartMutation }, CreateCartMutationVariables>({
     query: CreateCart,
+    variables: {
+      buyerIdentity
+    },
     isQuery: false
   })
 

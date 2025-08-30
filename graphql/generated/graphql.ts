@@ -8532,6 +8532,15 @@ export type CartFragment = {
   id: string;
   checkoutUrl: string;
   totalQuantity: number;
+  buyerIdentity: {
+    __typename?: "CartBuyerIdentity";
+    email?: string | null;
+    customer?: {
+      __typename?: "Customer";
+      id: string;
+      email?: string | null;
+    } | null;
+  };
   cost: {
     __typename?: "CartCost";
     subtotalAmount: {
@@ -8903,6 +8912,15 @@ export type AddToCartMutation = {
       id: string;
       checkoutUrl: string;
       totalQuantity: number;
+      buyerIdentity: {
+        __typename?: "CartBuyerIdentity";
+        email?: string | null;
+        customer?: {
+          __typename?: "Customer";
+          id: string;
+          email?: string | null;
+        } | null;
+      };
       cost: {
         __typename?: "CartCost";
         subtotalAmount: {
@@ -9134,6 +9152,7 @@ export type AddToCartMutation = {
 
 export type CreateCartMutationVariables = Exact<{
   lineItems?: InputMaybe<Array<CartLineInput> | CartLineInput>;
+  buyerIdentity?: InputMaybe<CartBuyerIdentityInput>;
 }>;
 
 export type CreateCartMutation = {
@@ -9145,6 +9164,15 @@ export type CreateCartMutation = {
       id: string;
       checkoutUrl: string;
       totalQuantity: number;
+      buyerIdentity: {
+        __typename?: "CartBuyerIdentity";
+        email?: string | null;
+        customer?: {
+          __typename?: "Customer";
+          id: string;
+          email?: string | null;
+        } | null;
+      };
       cost: {
         __typename?: "CartCost";
         subtotalAmount: {
@@ -9388,6 +9416,15 @@ export type EditCartItemsMutation = {
       id: string;
       checkoutUrl: string;
       totalQuantity: number;
+      buyerIdentity: {
+        __typename?: "CartBuyerIdentity";
+        email?: string | null;
+        customer?: {
+          __typename?: "Customer";
+          id: string;
+          email?: string | null;
+        } | null;
+      };
       cost: {
         __typename?: "CartCost";
         subtotalAmount: {
@@ -9631,6 +9668,15 @@ export type RemoveFromCartMutation = {
       id: string;
       checkoutUrl: string;
       totalQuantity: number;
+      buyerIdentity: {
+        __typename?: "CartBuyerIdentity";
+        email?: string | null;
+        customer?: {
+          __typename?: "Customer";
+          id: string;
+          email?: string | null;
+        } | null;
+      };
       cost: {
         __typename?: "CartCost";
         subtotalAmount: {
@@ -9871,6 +9917,15 @@ export type GetCartQuery = {
     id: string;
     checkoutUrl: string;
     totalQuantity: number;
+    buyerIdentity: {
+      __typename?: "CartBuyerIdentity";
+      email?: string | null;
+      customer?: {
+        __typename?: "Customer";
+        id: string;
+        email?: string | null;
+      } | null;
+    };
     cost: {
       __typename?: "CartCost";
       subtotalAmount: {
@@ -10691,6 +10746,13 @@ export const Cart = gql`
   fragment cart on Cart {
     id
     checkoutUrl
+    buyerIdentity {
+      email
+      customer {
+        id
+        email
+      }
+    }
     cost {
       subtotalAmount {
         amount
@@ -10785,8 +10847,11 @@ export const AddToCart = gql`
   ${Cart}
 `;
 export const CreateCart = gql`
-  mutation createCart($lineItems: [CartLineInput!]) {
-    cartCreate(input: { lines: $lineItems }) {
+  mutation createCart(
+    $lineItems: [CartLineInput!]
+    $buyerIdentity: CartBuyerIdentityInput
+  ) {
+    cartCreate(input: { lines: $lineItems, buyerIdentity: $buyerIdentity }) {
       cart {
         ...cart
       }

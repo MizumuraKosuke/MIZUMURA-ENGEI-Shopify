@@ -58,7 +58,7 @@ export class CustomerAccount {
       client_id: this.clientId,
       response_type: 'code',
       redirect_uri: redirectUri,
-      scope: 'openid email https://api.shopify.com/auth/customer.graphql'
+      scope: 'openid email customer-account-api:full'
     })
 
     // Correct Customer Account API OAuth URL
@@ -135,13 +135,13 @@ export class CustomerAccount {
       // 最新APIバージョンを使用: 2025-07
       const graphqlUrl = `https://shopify.com/${this.shopId}/account/customer/api/2025-07/graphql`
       console.log('Fetching customer from:', graphqlUrl)
-      console.log('Authorization header:', `Bearer ${accessToken.substring(0, 20)}...`)
+      console.log('Authorization header:', `${accessToken}`)
       
       const response = await fetch(graphqlUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `${accessToken}`,
         },
         body: JSON.stringify({
           query: CUSTOMER_DETAILS_QUERY

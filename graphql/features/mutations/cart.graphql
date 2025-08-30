@@ -8,8 +8,8 @@ mutation addToCart($cartId: ID!, $lines: [CartLineInput!]!) {
   }
 }
 
-mutation createCart($lineItems: [CartLineInput!]) {
-  cartCreate(input: { lines: $lineItems }) {
+mutation createCart($lineItems: [CartLineInput!], $buyerIdentity: CartBuyerIdentityInput) {
+  cartCreate(input: { lines: $lineItems, buyerIdentity: $buyerIdentity }) {
     cart {
       ...cart
     }

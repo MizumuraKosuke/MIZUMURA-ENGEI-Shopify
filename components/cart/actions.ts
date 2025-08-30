@@ -1,6 +1,7 @@
 'use server'
 
 import { TAGS } from 'lib/constants'
+import { CustomerAccount } from 'lib/customer-account'
 import {
   addToCart,
   createCart,
@@ -97,10 +98,37 @@ export async function updateItemQuantity(
 
 export async function redirectToCheckout() {
   const cart = await getCart()
-  redirect(cart!.checkoutUrl)
+  
+  // ShopifyのカートURLを適切なチェックアウトURLに変換
+  let checkoutUrl = cart!.checkoutUrl
+  
+  // カートURL (/cart/c/...) をチェックアウトURL形式に変換
+  if (checkoutUrl.includes('/cart/c/')) {
+    const shopDomain = process.env.SHOPIFY_STORE_DOMAIN
+    if (shopDomain) {
+      // URLを解析してパスとパラメータを取得
+      const url = new URL(checkoutUrl, `https://${shopDomain}`)
+      // /cart/c/... を /checkouts/cn/... に変換
+      const newPath = url.pathname.replace('/cart/c/', '/checkouts/cn/')
+      checkoutUrl = `https://${shopDomain}${newPath}${url.search}`
+    }
+  }
+  
+  redirect(checkoutUrl)
 }
 
 export async function createCartAndSetCookie() {
-  const cart = await createCart();
+  // Get customer email from Customer Account API if logged in
+  let customerEmail: string | undefined
+  try {
+    const customerAccount = new CustomerAccount()
+    const customer = await customerAccount.getCustomer()
+    customerEmail = customer?.email
+  } catch (error) {
+    // Customer not logged in or error fetching customer data
+    customerEmail = undefined
+  }
+
+  const cart = await createCart(customerEmail);
   (await cookies()).set('cartId', cart.id!)
 }
