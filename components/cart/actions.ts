@@ -15,7 +15,7 @@ import { setCookie } from 'nookies'
 import { redirect } from 'next/navigation'
 
 export async function addItem(
-  prevState: any,
+  prevState: string | null | undefined,
   selectedVariantId: string | undefined
 ) {
   if (!selectedVariantId) {
@@ -25,12 +25,12 @@ export async function addItem(
   try {
     await addToCart([{ merchandiseId: selectedVariantId, quantity: 1 }])
     revalidateTag(TAGS.cart)
-  } catch (e) {
+  } catch {
     return 'Error adding item to cart'
   }
 }
 
-export async function removeItem(prevState: any, merchandiseId: string) {
+export async function removeItem(prevState: string | null | undefined, merchandiseId: string) {
   try {
     const cart = await getCart()
 
@@ -48,13 +48,13 @@ export async function removeItem(prevState: any, merchandiseId: string) {
     } else {
       return 'Item not found in cart'
     }
-  } catch (e) {
+  } catch {
     return 'Error removing item from cart'
   }
 }
 
 export async function updateItemQuantity(
-  prevState: any,
+  prevState: string | null | undefined,
   payload: {
     merchandiseId: string;
     quantity: number;

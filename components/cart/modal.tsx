@@ -126,7 +126,7 @@ export default function CartModal() {
                               <div className="absolute z-40 -ml-1 -mt-2">
                                 <DeleteItemButton
                                   item={item}
-                                  optimisticUpdate={updateCartItem}
+                                  optimisticUpdate={(merchandiseId) => updateCartItem(merchandiseId, 'delete')}
                                 />
                               </div>
                               <div className="flex flex-row">
@@ -173,7 +173,7 @@ export default function CartModal() {
                                   <EditItemQuantityButton
                                     item={item}
                                     type="minus"
-                                    optimisticUpdate={updateCartItem}
+                                    optimisticUpdate={(merchandiseId) => updateCartItem(merchandiseId, 'minus')}
                                   />
                                   <p className="w-6 text-center">
                                     <span className="w-full text-sm">
@@ -183,7 +183,7 @@ export default function CartModal() {
                                   <EditItemQuantityButton
                                     item={item}
                                     type="plus"
-                                    optimisticUpdate={updateCartItem}
+                                    optimisticUpdate={(merchandiseId) => updateCartItem(merchandiseId, 'plus')}
                                   />
                                 </div>
                               </div>

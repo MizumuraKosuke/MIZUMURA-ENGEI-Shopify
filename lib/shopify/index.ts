@@ -3,8 +3,8 @@ import {
 } from 'lib/constants'
 import { revalidateTag } from 'next/cache'
 import { headers } from 'next/headers'
-import { parseCookies } from 'nookies'
 import { NextRequest, NextResponse } from 'next/server'
+import { parseCookies } from 'nookies'
 import type {
   AddToCartMutation,
   AddToCartMutationVariables,
@@ -34,7 +34,6 @@ import type {
   GetProductRecommendationsQueryVariables,
   GetProductsQuery,
   GetProductsQueryVariables,
-  Menu,
   MenuItem,
   Page,
   Product,
@@ -111,21 +110,23 @@ export async function shopifyFetch<T, V = Record<string, unknown>>({
       status: 200,
       body: { data: result.data } as T
     }
-  } catch (e: any) {
-    if (e.graphQLErrors && e.graphQLErrors.length > 0) {
+  } catch (e: unknown) {
+    const error = e as { graphQLErrors?: Array<{ message: string }>; networkError?: { message?: string; statusCode?: number } }
+    
+    if (error.graphQLErrors && error.graphQLErrors.length > 0) {
       throw {
-        cause: e.graphQLErrors[0].message || 'GraphQL error',
+        cause: error.graphQLErrors[0]?.message || 'GraphQL error',
         status: 500,
-        message: e.graphQLErrors[0].message,
+        message: error.graphQLErrors[0]?.message,
         query
       }
     }
 
-    if (e.networkError) {
+    if (error.networkError) {
       throw {
-        cause: e.networkError.message || 'Network error',
-        status: e.networkError.statusCode || 500,
-        message: e.networkError.message,
+        cause: error.networkError.message || 'Network error',
+        status: error.networkError.statusCode || 500,
+        message: error.networkError.message,
         query
       }
     }

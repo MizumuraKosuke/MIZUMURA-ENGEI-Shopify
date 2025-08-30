@@ -1,137 +1,6 @@
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { CustomerAccount } from '../../../../lib/customer-account'
-
-// Mock order detail data - in production, this would come from Customer Account API
-function getMockOrderDetail(orderId: string) {
-  const mockOrders = {
-    '1': {
-      id: 'gid://shopify/Order/1',
-      orderNumber: '#1001',
-      processedAt: '2024-03-15T10:00:00Z',
-      fulfillmentStatus: 'FULFILLED',
-      financialStatus: 'PAID',
-      totalPrice: { amount: '150.00', currencyCode: 'JPY' },
-      subtotalPrice: { amount: '130.00', currencyCode: 'JPY' },
-      totalShippingPrice: { amount: '20.00', currencyCode: 'JPY' },
-      totalTax: { amount: '0.00', currencyCode: 'JPY' },
-      shippingAddress: {
-        firstName: '太郎',
-        lastName: '田中',
-        address1: '東京都渋谷区1-2-3',
-        address2: 'マンション101',
-        city: '渋谷区',
-        province: '東京都',
-        zip: '150-0001',
-        country: 'Japan',
-        phone: '03-1234-5678'
-      },
-      billingAddress: {
-        firstName: '太郎',
-        lastName: '田中',
-        address1: '東京都渋谷区1-2-3',
-        address2: 'マンション101',
-        city: '渋谷区',
-        province: '東京都',
-        zip: '150-0001',
-        country: 'Japan'
-      },
-      lineItems: [
-        {
-          id: '1',
-          title: 'ポトス',
-          quantity: 2,
-          originalUnitPrice: { amount: '65.00', currencyCode: 'JPY' },
-          totalDiscount: { amount: '0.00', currencyCode: 'JPY' },
-          variant: {
-            id: 'variant1',
-            title: 'Sサイズ',
-            sku: 'POTHOS-S',
-            image: {
-              url: 'https://via.placeholder.com/150',
-              altText: 'ポトス'
-            }
-          }
-        }
-      ],
-      fulfillments: [
-        {
-          trackingNumber: 'JP123456789',
-          trackingUrl: 'https://example.com/tracking/JP123456789',
-          deliveredAt: '2024-03-17T14:00:00Z'
-        }
-      ]
-    },
-    '2': {
-      id: 'gid://shopify/Order/2',
-      orderNumber: '#1002',
-      processedAt: '2024-03-10T14:30:00Z',
-      fulfillmentStatus: 'UNFULFILLED',
-      financialStatus: 'PAID',
-      totalPrice: { amount: '280.00', currencyCode: 'JPY' },
-      subtotalPrice: { amount: '250.00', currencyCode: 'JPY' },
-      totalShippingPrice: { amount: '30.00', currencyCode: 'JPY' },
-      totalTax: { amount: '0.00', currencyCode: 'JPY' },
-      shippingAddress: {
-        firstName: '太郎',
-        lastName: '田中',
-        address1: '東京都渋谷区1-2-3',
-        address2: 'マンション101',
-        city: '渋谷区',
-        province: '東京都',
-        zip: '150-0001',
-        country: 'Japan',
-        phone: '03-1234-5678'
-      },
-      billingAddress: {
-        firstName: '太郎',
-        lastName: '田中',
-        address1: '東京都渋谷区1-2-3',
-        address2: 'マンション101',
-        city: '渋谷区',
-        province: '東京都',
-        zip: '150-0001',
-        country: 'Japan'
-      },
-      lineItems: [
-        {
-          id: '1',
-          title: 'モンステラ',
-          quantity: 1,
-          originalUnitPrice: { amount: '180.00', currencyCode: 'JPY' },
-          totalDiscount: { amount: '0.00', currencyCode: 'JPY' },
-          variant: {
-            id: 'variant2',
-            title: 'Mサイズ',
-            sku: 'MONSTERA-M',
-            image: {
-              url: 'https://via.placeholder.com/150',
-              altText: 'モンステラ'
-            }
-          }
-        },
-        {
-          id: '2',
-          title: '観葉植物の土',
-          quantity: 2,
-          originalUnitPrice: { amount: '35.00', currencyCode: 'JPY' },
-          totalDiscount: { amount: '0.00', currencyCode: 'JPY' },
-          variant: {
-            id: 'variant3',
-            title: '5L',
-            sku: 'SOIL-5L',
-            image: {
-              url: 'https://via.placeholder.com/150',
-              altText: '観葉植物の土'
-            }
-          }
-        }
-      ],
-      fulfillments: []
-    }
-  }
-  return mockOrders[orderId as keyof typeof mockOrders] || null
-}
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -166,8 +35,9 @@ function getStatusText(status: string) {
 export default async function OrderDetailPage({ 
   params 
 }: { 
-  params: { orderId: string } 
+  params: Promise<{ orderId: string }> 
 }) {
+  const { orderId } = await params
   const customerAccount = new CustomerAccount()
   const customer = await customerAccount.getCustomer()
   
@@ -175,7 +45,7 @@ export default async function OrderDetailPage({
     redirect('/login')
   }
 
-  const order = getMockOrderDetail(params.orderId)
+  const order = await customerAccount.getOrder(orderId)
   
   if (!order) {
     redirect('/account/orders')
@@ -238,14 +108,22 @@ export default async function OrderDetailPage({
                 {order.lineItems.map((item) => (
                   <div key={item.id} className="flex items-start space-x-4">
                     <div className="h-20 w-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <svg className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                      </svg>
+                      {item.variant?.image?.url ? (
+                        <img 
+                          src={item.variant.image.url} 
+                          alt={item.variant.image.altText || item.title}
+                          className="h-20 w-20 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <svg className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                        </svg>
+                      )}
                     </div>
                     <div className="flex-1">
                       <h3 className="text-lg font-medium text-gray-900">{item.title}</h3>
-                      <p className="text-sm text-gray-600">{item.variant.title}</p>
-                      <p className="text-sm text-gray-600">SKU: {item.variant.sku}</p>
+                      {item.variant?.title && <p className="text-sm text-gray-600">{item.variant.title}</p>}
+                      {item.variant?.sku && <p className="text-sm text-gray-600">SKU: {item.variant.sku}</p>}
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-sm text-gray-600">数量: {item.quantity}</span>
                         <span className="text-lg font-medium text-gray-900">
@@ -282,7 +160,7 @@ export default async function OrderDetailPage({
                     )}
                     <div className="pt-2">
                       <a
-                        href={fulfillment.trackingUrl}
+                        href={fulfillment.trackingUrl || undefined}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-500"

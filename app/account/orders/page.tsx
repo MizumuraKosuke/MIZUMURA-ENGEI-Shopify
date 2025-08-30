@@ -1,66 +1,6 @@
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { CustomerAccount } from '../../../lib/customer-account'
-
-// Mock orders data - in production, this would come from Customer Account API
-const mockOrders = [
-  {
-    id: 'gid://shopify/Order/1',
-    orderNumber: '#1001',
-    processedAt: '2024-03-15T10:00:00Z',
-    fulfillmentStatus: 'FULFILLED',
-    financialStatus: 'PAID',
-    totalPrice: {
-      amount: '150.00',
-      currencyCode: 'JPY'
-    },
-    lineItems: [
-      {
-        title: 'ポトス',
-        quantity: 2,
-        variant: {
-          image: {
-            url: 'https://via.placeholder.com/150',
-            altText: 'ポトス'
-          }
-        }
-      }
-    ]
-  },
-  {
-    id: 'gid://shopify/Order/2',
-    orderNumber: '#1002',
-    processedAt: '2024-03-10T14:30:00Z',
-    fulfillmentStatus: 'UNFULFILLED',
-    financialStatus: 'PAID',
-    totalPrice: {
-      amount: '280.00',
-      currencyCode: 'JPY'
-    },
-    lineItems: [
-      {
-        title: 'モンステラ',
-        quantity: 1,
-        variant: {
-          image: {
-            url: 'https://via.placeholder.com/150',
-            altText: 'モンステラ'
-          }
-        }
-      },
-      {
-        title: '観葉植物の土',
-        quantity: 2,
-        variant: {
-          image: {
-            url: 'https://via.placeholder.com/150',
-            altText: '観葉植物の土'
-          }
-        }
-      }
-    ]
-  }
-]
 
 function getStatusColor(status: string) {
   switch (status) {
@@ -100,6 +40,8 @@ export default async function OrdersPage() {
     redirect('/login')
   }
 
+  const orders = await customerAccount.getOrders() || []
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
       <div className="mb-8">
@@ -111,7 +53,7 @@ export default async function OrdersPage() {
         </p>
       </div>
 
-      {mockOrders.length === 0 ? (
+      {orders.length === 0 ? (
         <div className="text-center py-12">
           <div className="mx-auto h-12 w-12 text-gray-400">
             <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -123,7 +65,7 @@ export default async function OrdersPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {mockOrders.map((order) => (
+          {orders.map((order) => (
             <div key={order.id} className="bg-white shadow rounded-lg">
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
@@ -152,11 +94,19 @@ export default async function OrdersPage() {
               <div className="px-6 py-4">
                 <div className="space-y-3">
                   {order.lineItems.map((item, index) => (
-                    <div key={index} className="flex items-center space-x-4">
+                    <div key={item.id || index} className="flex items-center space-x-4">
                       <div className="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                        </svg>
+                        {item.variant?.image?.url ? (
+                          <img 
+                            src={item.variant.image.url} 
+                            alt={item.variant.image.altText || item.title}
+                            className="h-16 w-16 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                          </svg>
+                        )}
                       </div>
                       <div className="flex-1">
                         <h4 className="text-sm font-medium text-gray-900">

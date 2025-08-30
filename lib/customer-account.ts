@@ -1,5 +1,94 @@
 import { parseCookies, setCookie, destroyCookie } from 'nookies'
 
+// Types for Customer Account API responses
+interface CustomerOrderEdge {
+  node: {
+    id: string
+    orderNumber: string
+    processedAt: string
+    fulfillmentStatus: string
+    financialStatus: string
+    totalPrice: { amount: string; currencyCode: string }
+    subtotalPrice: { amount: string; currencyCode: string }
+    totalShippingPrice: { amount: string; currencyCode: string }
+    totalTax: { amount: string; currencyCode: string }
+    shippingAddress: {
+      firstName: string
+      lastName: string
+      address1: string
+      address2?: string
+      city: string
+      province: string
+      zip: string
+      country: string
+      phone?: string
+    }
+    billingAddress: {
+      firstName: string
+      lastName: string
+      address1: string
+      address2?: string
+      city: string
+      province: string
+      zip: string
+      country: string
+    }
+    lineItems: {
+      edges: Array<{
+        node: {
+          id: string
+          title: string
+          quantity: number
+          originalUnitPrice: { amount: string; currencyCode: string }
+          totalDiscount: { amount: string; currencyCode: string }
+          variant: {
+            id: string
+            title: string
+            sku: string
+            image: {
+              url: string
+              altText: string
+            }
+          }
+        }
+      }>
+    }
+    fulfillments: {
+      edges: Array<{
+        node: {
+          id: string
+          status: string
+          trackingCompany?: string
+          trackingNumbers?: string[]
+          trackingUrls?: string[]
+          updatedAt: string
+          deliveredAt?: string
+        }
+      }>
+    }
+  }
+}
+
+interface CustomerOrdersResponse {
+  data: {
+    customer: {
+      orders: {
+        edges: CustomerOrderEdge[]
+      }
+    }
+  }
+  errors?: Array<{ message: string }>
+}
+
+interface CustomerOrderResponse {
+  data: {
+    customer: {
+      order: CustomerOrderEdge['node']
+    }
+  }
+  errors?: Array<{ message: string }>
+}
+
 // GraphQL Queries
 const CUSTOMER_DETAILS_QUERY = `#graphql
   query CustomerDetails {
@@ -122,6 +211,192 @@ const CUSTOMER_DEFAULT_ADDRESS_UPDATE_MUTATION = `#graphql
       customerUserErrors {
         field
         message
+      }
+    }
+  }
+`
+
+const CUSTOMER_ORDERS_QUERY = `#graphql
+  query CustomerOrders($first: Int!) {
+    customer {
+      id
+      orders(first: $first, sortKey: PROCESSED_AT, reverse: true) {
+        edges {
+          node {
+            id
+            orderNumber
+            processedAt
+            fulfillmentStatus
+            financialStatus
+            totalPrice {
+              amount
+              currencyCode
+            }
+            subtotalPrice {
+              amount
+              currencyCode
+            }
+            totalShippingPrice {
+              amount
+              currencyCode
+            }
+            totalTax {
+              amount
+              currencyCode
+            }
+            shippingAddress {
+              firstName
+              lastName
+              address1
+              address2
+              city
+              province
+              zip
+              country
+              phone
+            }
+            billingAddress {
+              firstName
+              lastName
+              address1
+              address2
+              city
+              province
+              zip
+              country
+            }
+            lineItems(first: 100) {
+              edges {
+                node {
+                  id
+                  title
+                  quantity
+                  originalUnitPrice {
+                    amount
+                    currencyCode
+                  }
+                  totalDiscount {
+                    amount
+                    currencyCode
+                  }
+                  variant {
+                    id
+                    title
+                    sku
+                    image {
+                      url
+                      altText
+                    }
+                  }
+                }
+              }
+            }
+            fulfillments(first: 10) {
+              edges {
+                node {
+                  id
+                  status
+                  trackingCompany
+                  trackingNumbers
+                  trackingUrls
+                  updatedAt
+                  deliveredAt
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
+const CUSTOMER_ORDER_QUERY = `#graphql
+  query CustomerOrder($id: ID!) {
+    customer {
+      id
+      order(id: $id) {
+        id
+        orderNumber
+        processedAt
+        fulfillmentStatus
+        financialStatus
+        totalPrice {
+          amount
+          currencyCode
+        }
+        subtotalPrice {
+          amount
+          currencyCode
+        }
+        totalShippingPrice {
+          amount
+          currencyCode
+        }
+        totalTax {
+          amount
+          currencyCode
+        }
+        shippingAddress {
+          firstName
+          lastName
+          address1
+          address2
+          city
+          province
+          zip
+          country
+          phone
+        }
+        billingAddress {
+          firstName
+          lastName
+          address1
+          address2
+          city
+          province
+          zip
+          country
+        }
+        lineItems(first: 100) {
+          edges {
+            node {
+              id
+              title
+              quantity
+              originalUnitPrice {
+                amount
+                currencyCode
+              }
+              totalDiscount {
+                amount
+                currencyCode
+              }
+              variant {
+                id
+                title
+                sku
+                image {
+                  url
+                  altText
+                }
+              }
+            }
+          }
+        }
+        fulfillments(first: 10) {
+          edges {
+            node {
+              id
+              status
+              trackingCompany
+              trackingNumbers
+              trackingUrls
+              updatedAt
+              deliveredAt
+            }
+          }
+        }
       }
     }
   }
@@ -487,6 +762,100 @@ export class CustomerAccount {
       return result.data.customerDefaultAddressUpdate.customer
     } catch (error) {
       throw error
+    }
+  }
+
+  // Get customer orders
+  async getOrders(first: number = 20) {
+    const cookies = parseCookies()
+    const accessToken = cookies.customer_access_token
+    
+    if (!accessToken) {
+      return null
+    }
+
+    try {
+      const graphqlUrl = `https://shopify.com/${this.shopId}/account/customer/api/2025-07/graphql`
+      
+      const response = await fetch(graphqlUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': accessToken,
+        },
+        body: JSON.stringify({
+          query: CUSTOMER_ORDERS_QUERY,
+          variables: { first }
+        })
+      })
+
+      const result: CustomerOrdersResponse = await response.json()
+      
+      if (!response.ok || result.errors || !result.data?.customer?.orders) {
+        return null
+      }
+
+      // Transform edges to nodes
+      return result.data.customer.orders.edges.map((edge) => ({
+        ...edge.node,
+        lineItems: edge.node.lineItems.edges.map((lineEdge) => lineEdge.node),
+        fulfillments: edge.node.fulfillments.edges.map((fulfillmentEdge) => ({
+          ...fulfillmentEdge.node,
+          trackingNumber: fulfillmentEdge.node.trackingNumbers?.[0] || null,
+          trackingUrl: fulfillmentEdge.node.trackingUrls?.[0] || null
+        }))
+      }))
+    } catch (error) {
+      console.warn('Error fetching customer orders:', error)
+      return null
+    }
+  }
+
+  // Get specific order by ID
+  async getOrder(orderId: string) {
+    const cookies = parseCookies()
+    const accessToken = cookies.customer_access_token
+    
+    if (!accessToken) {
+      return null
+    }
+
+    try {
+      const graphqlUrl = `https://shopify.com/${this.shopId}/account/customer/api/2025-07/graphql`
+      
+      const response = await fetch(graphqlUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': accessToken,
+        },
+        body: JSON.stringify({
+          query: CUSTOMER_ORDER_QUERY,
+          variables: { id: orderId }
+        })
+      })
+
+      const result: CustomerOrderResponse = await response.json()
+      
+      if (!response.ok || result.errors || !result.data?.customer?.order) {
+        return null
+      }
+
+      const order = result.data.customer.order
+      
+      // Transform edges to nodes
+      return {
+        ...order,
+        lineItems: order.lineItems.edges.map((edge) => edge.node),
+        fulfillments: order.fulfillments.edges.map((edge) => ({
+          ...edge.node,
+          trackingNumber: edge.node.trackingNumbers?.[0] || null,
+          trackingUrl: edge.node.trackingUrls?.[0] || null
+        }))
+      }
+    } catch (error) {
+      console.warn('Error fetching customer order:', error)
+      return null
     }
   }
 }

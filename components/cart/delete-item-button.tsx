@@ -10,7 +10,7 @@ export function DeleteItemButton({
   optimisticUpdate
 }: {
   item: BaseCartLine;
-  optimisticUpdate: any;
+  optimisticUpdate: (merchandiseId: string) => void;
 }) {
   const [message, formAction] = useActionState(removeItem, null)
   const merchandiseId = item.merchandise.id
@@ -19,7 +19,7 @@ export function DeleteItemButton({
   return (
     <form
       action={async () => {
-        optimisticUpdate(merchandiseId, 'delete')
+        optimisticUpdate(merchandiseId)
         removeItemAction()
       }}
     >
